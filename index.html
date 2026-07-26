@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>PurrfectPlanner </title>
+
+<!-- PWA: manifest + icons + theming -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1E2126">
+<link rel="icon" href="iconn.png">
+<link rel="apple-touch-icon" href="iconn.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PurrfectPlanner">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace']
+        },
+        keyframes: {
+          toastIn: {
+            '0%': { opacity: 0, transform: 'translateY(10px)' },
+            '100%': { opacity: 1, transform: 'translateY(0)' }
+          },
+          popIn: {
+            '0%': { opacity: 0, transform: 'scale(.9) translateY(6px)' },
+            '100%': { opacity: 1, transform: 'scale(1) translateY(0)' }
+          },
+          stampPop: {
+            '0%': { opacity: 0, transform: 'scale(2.2) rotate(-18deg)' },
+            '60%': { opacity: 1, transform: 'scale(0.92) rotate(-12deg)' },
+            '100%': { opacity: 1, transform: 'scale(1) rotate(-12deg)' }
+          }
+        },
+        animation: {
+          toastIn: 'toastIn .25s ease',
+          popIn: 'popIn .2s ease',
+          stampPop: 'stampPop .35s cubic-bezier(.2,1.4,.4,1)'
+        }
+      }
+    }
+  }
+</script>
+<style>
+  @keyframes idlePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(58,103,216,0); border-color: #D7DBE1; }
+    50%      { box-shadow: 0 0 0 8px rgba(58,103,216,.12); border-color: #3A67D8; }
+  }
+  @keyframes idleBounce {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
+  }
+  .idle-active { animation: idlePulse 1.8s ease-in-out infinite; }
+  .idle-active .idle-icon { animation: idleBounce 1.8s ease-in-out infinite; }
+  .dark .idle-active { border-color: #33363D; }
+</style>
+</head>
+<body class="relative bg-[#EDEFF2] dark:bg-[#15171B] [background-image:linear-gradient(to_right,rgba(148,152,158,.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,152,158,.12)_1px,transparent_1px)] dark:[background-image:linear-gradient(to_right,rgba(255,255,255,.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,.06)_1px,transparent_1px)] [background-size:80px_80px] font-sans text-[#1E2126] dark:text-[#E7E9EC] min-h-screen flex justify-center max-[900px]:flex-col max-[900px]:items-center px-5 pt-14 pb-[100px] transition-colors duration-200">
+
+<div id="floatingHeader" class="fixed top-10 left-8 z-30 w-[216px] max-[900px]:static max-[900px]:top-auto max-[900px]:left-auto max-[900px]:w-full max-[900px]:max-w-[460px] max-[900px]:mb-[26px]">
+  <div class="relative [transform:rotate(-1.1deg)] max-[900px]:[transform:none]">
+
+    <!-- perforation: punched stub edge, desktop only -->
+    <div class="hidden min-[901px]:block absolute top-4 bottom-4 -right-[7px] w-[14px] [background-image:radial-gradient(circle,#EDEFF2_5.5px,transparent_6px)] dark:[background-image:radial-gradient(circle,#15171B_5.5px,transparent_6px)] [background-size:100%_20px] [background-repeat:repeat-y] pointer-events-none z-10"></div>
+
+    <div class="bg-white dark:bg-[#1E2126] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] rounded-[22px] shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)] px-5 pt-[18px] pb-4 max-[900px]:flex max-[900px]:items-center max-[900px]:justify-between max-[900px]:gap-4 max-[900px]:px-5 max-[900px]:py-4">
+
+      <div class="max-[900px]:flex-1 max-[900px]:min-w-0">
+        <p id="sidebarDate" class="font-mono text-[10.5px] font-bold uppercase tracking-[.14em] text-[#3A67D8] mb-2 max-[900px]:mb-0.5">MON · JUL 06</p>
+        <h1 class="text-[24px] font-extrabold tracking-[-0.02em] leading-[1.08] m-0 max-[900px]:text-[19px]">Your day,<br class="max-[900px]:hidden"> <span class="max-[900px]:inline">ticketed.</span></h1>
+        <p id="streakLabel" class="hidden mt-1.5 font-mono text-[10.5px] font-bold uppercase tracking-[.08em] text-[#D9932A] items-center gap-1"><span id="streakFlame" class="inline-flex"></span><span id="streakCount">0</span> day streak</p>
+      </div>
+
+      <div class="my-4 border-t-[1.5px] border-dashed border-[#D7DBE1] dark:border-[#33363D] max-[900px]:hidden"></div>
+
+      <div class="relative max-[900px]:shrink-0">
+        <button id="profileBtn" title="Menu"
+          class="w-full flex items-center gap-2.5 group cursor-pointer max-[900px]:w-auto">
+          <span id="sidebarAvatar" class="w-9 h-9 rounded-full bg-gradient-to-br from-[#F7A6A6] via-[#C13575] to-[#3A67D8] flex items-center justify-center text-white font-bold text-[13px] shadow-[0_4px_14px_-4px_rgba(0,0,0,.35)] transition-transform duration-150 group-hover:scale-105 group-active:scale-95 shrink-0">?</span>
+          <span class="min-w-0 text-left max-[900px]:hidden">
+            <p id="sidebarName" class="font-bold text-[13.5px] leading-tight truncate">Friend</p>
+            <p id="count" class="text-[11.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-tight truncate">0 tasks</p>
+          </span>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="text-[#B7BBC2] dark:text-[#5B5F68] shrink-0 ml-auto transition-transform duration-150 group-hover:translate-x-0.5 max-[900px]:hidden"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+
+        <div id="greetBubble" class="hidden absolute left-full ml-3 top-1/2 -translate-y-1/2 max-[900px]:left-auto max-[900px]:right-full max-[900px]:ml-0 max-[900px]:mr-3 w-[200px] bg-[#1E2126] dark:bg-[#26282D] text-white text-[12.5px] font-medium leading-snug rounded-2xl px-3.5 py-3 shadow-[0_12px_30px_-10px_rgba(0,0,0,.45)] z-30 opacity-0 translate-y-1 transition-all duration-200 cursor-pointer">
+          <span id="greetText">Hey!</span>
+          <div class="absolute top-1/2 -translate-y-1/2 -left-[5px] max-[900px]:left-auto max-[900px]:-right-[5px] w-3 h-3 bg-[#1E2126] dark:bg-[#26282D] [transform:rotate(45deg)]"></div>
+        </div>
+
+        <div id="profileMenu" class="hidden absolute left-full ml-3 top-0 max-[900px]:left-auto max-[900px]:right-full max-[900px]:ml-0 max-[900px]:mr-3 w-[250px] bg-white dark:bg-[#1E2126] border border-[#E7E8EB] dark:border-[#33363D] rounded-[20px] shadow-[0_20px_45px_-15px_rgba(0,0,0,.28)] overflow-hidden z-40 origin-top-left max-[900px]:origin-top-right opacity-0 scale-95 -translate-y-1 transition-all duration-150">
+          <div class="flex items-center gap-3 px-4 py-3.5 border-b border-[#EEEFF1] dark:border-[#2A2D33]">
+            <div id="menuAvatar" class="w-9 h-9 rounded-full bg-gradient-to-br from-[#F7A6A6] via-[#C13575] to-[#3A67D8] flex items-center justify-center text-white font-bold text-xs shrink-0">?</div>
+            <div class="min-w-0">
+              <p id="menuName" class="font-bold text-[14px] leading-tight truncate">Friend</p>
+              <p class="text-[12px] text-[#8A8F98] dark:text-[#9AA3AE] leading-tight truncate">Menu</p>
+            </div>
+          </div>
+
+          <div class="py-1.5">
+            <button id="menuNameBtn" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <span class="flex-1 text-left">Change name</span>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#B7BBC2] dark:text-[#5B5F68] shrink-0"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+
+            <button id="menuDarkToggle" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg id="menuDarkIconMoon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg id="menuDarkIconSun" class="hidden" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+              </span>
+              <span class="flex-1 text-left">Dark mode</span>
+              <span id="menuDarkPill" class="w-9 h-5 rounded-full bg-[#D7DBE1] relative transition-colors shrink-0">
+                <span id="menuDarkKnob" class="absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow transition-transform duration-150"></span>
+              </span>
+            </button>
+
+            <button id="menuReminderToggle" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              </span>
+              <span class="flex-1 text-left">Reminders</span>
+              <span id="menuReminderPill" class="w-9 h-5 rounded-full bg-[#D7DBE1] relative transition-colors shrink-0">
+                <span id="menuReminderKnob" class="absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow transition-transform duration-150"></span>
+              </span>
+            </button>
+
+            <button id="menuScheduleBtn" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18"/><path d="M8 3v4M16 3v4"/></svg>
+              </span>
+              <span class="flex-1 text-left">Class schedule</span>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#B7BBC2] dark:text-[#5B5F68] shrink-0"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+
+            <button id="menuParaBtn" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M4.2 12H8M16 12h3.8M6 6l2.5 2.5M17.5 15.5L20 18M18 6l-2.5 2.5M8.5 15.5L6 18"/><circle cx="12" cy="12" r="2.3"/></svg>
+              </span>
+              <span class="flex-1 text-left">Paraphraser</span>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#B7BBC2] dark:text-[#5B5F68] shrink-0"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+
+            <button id="menuApiKeyBtn" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 8.6 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 3.6 8.6a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.2.63.75 1.1 1.51 1H22a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </span>
+              <span class="flex-1 text-left">Gemini API key</span>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#B7BBC2] dark:text-[#5B5F68] shrink-0"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+
+          <div class="border-t border-[#EEEFF1] dark:border-[#2A2D33] py-1.5">
+            <button id="menuShareBtn" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-3.9M8.6 13.5l6.8 3.9"/></svg>
+              </span>
+              <span class="flex-1 text-left">Study buddy link</span>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#B7BBC2] dark:text-[#5B5F68] shrink-0"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+
+          <div class="border-t border-[#EEEFF1] dark:border-[#2A2D33] py-1.5">
+            <button id="menuInstallBtn" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+              </span>
+              <span class="flex-1 text-left">Install app</span>
+            </button>
+          </div>
+
+          <div class="border-t border-[#EEEFF1] dark:border-[#2A2D33] py-1.5">
+            <button id="menuExportBtn" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+              </span>
+              <span class="flex-1 text-left">Export data</span>
+            </button>
+            <button id="menuImportBtn" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m0 0l-4 4m4-4l4 4M4 3h16"/></svg>
+              </span>
+              <span class="flex-1 text-left">Import data</span>
+            </button>
+            <input type="file" id="importFileInput" accept="application/json" class="hidden">
+          </div>
+
+          <div class="border-t border-[#EEEFF1] dark:border-[#2A2D33] py-1.5">
+            <button id="menuClearDataBtn" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold text-[#C13535] hover:bg-[#FCEAE7] dark:hover:bg-[#2A1E1E] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#FCEAE7] dark:bg-[#2A1E1E] flex items-center justify-center text-[#C13535] shrink-0">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              </span>
+              <span class="flex-1 text-left">Clear all data</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div class="app w-full max-w-[460px]">
+  <div id="subjectFilters" class="hidden gap-2 flex-wrap mb-1"></div>
+  <div id="tickets" class="flex flex-col gap-[30px]"></div>
+
+  <div class="h-5"></div>
+  <div id="openAdd" class="border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] rounded-[22px] p-[22px] flex items-center justify-center gap-2 text-[#8A8F98] dark:text-[#9AA3AE] font-bold text-sm cursor-pointer transition-all duration-200 hover:text-[#1E2126] dark:hover:text-white hover:border-[#B7BBC2] dark:hover:border-[#4A4E57] hover:bg-white/50 dark:hover:bg-white/5">
+    <span class="idle-icon w-[22px] h-[22px] rounded-full bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] flex items-center justify-center text-[15px] leading-none">+</span> Add task
+  </div>
+
+  <div class="h-[14px]"></div>
+  <div id="openAddNote" class="border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] rounded-[22px] p-[22px] flex items-center justify-center gap-2 text-[#8A8F98] dark:text-[#9AA3AE] font-bold text-sm cursor-pointer transition-all duration-200 hover:text-[#1E2126] dark:hover:text-white hover:border-[#B7BBC2] dark:hover:border-[#4A4E57] hover:bg-white/50 dark:hover:bg-white/5">
+    <span class="idle-icon w-[22px] h-[22px] rounded-full bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] flex items-center justify-center text-[15px] leading-none">+</span> Add note
+  </div>
+
+  <div class="h-[30px]"></div>
+  <div id="paraphraserCard" class="hidden bg-white dark:bg-[#1E2126] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] rounded-[22px] p-5">
+    <h2 class="text-[15px] font-extrabold tracking-[-0.01em] mb-3 flex items-center gap-1.5">
+      <span class="text-[#3A67D8]">✦</span> Paraphraser
+    </h2>
+    <textarea id="paraInput" rows="4" placeholder="Paste or type text to paraphrase..."
+      class="w-full border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl px-3 py-2.5 text-[14px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none transition-colors duration-150 focus:border-[#1E2126] dark:focus:border-[#E7E9EC] focus:bg-white dark:focus:bg-[#0F1013] resize-none placeholder:text-[#B7BBC2] dark:placeholder:text-[#5B5F68]"></textarea>
+
+    <button id="paraBtn" class="mt-3 w-full border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans transition-opacity duration-150 active:scale-[.98] bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] hover:opacity-[.88] flex items-center justify-center gap-2">
+      <span id="paraBtnIcon"></span>
+      <span id="paraBtnLabel">Paraphrase</span>
+    </button>
+
+    <div id="paraOutputWrap" class="hidden mt-3">
+      <div class="flex items-center justify-between mb-1.5">
+        <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE]">Result</label>
+        <button id="paraCopyBtn" class="text-[11.5px] font-bold text-[#3A67D8] hover:underline">Copy</button>
+      </div>
+      <textarea id="paraOutput" rows="4" readonly
+        class="w-full border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl px-3 py-2.5 text-[14px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#F4F6FA] dark:bg-[#121417] outline-none resize-none"></textarea>
+    </div>
+  </div>
+
+  <div class="h-[14px]"></div>
+</div>
+
+<div id="notesLayer" class="absolute inset-0 pointer-events-none z-40"></div>
+
+<div id="toastStack" class="fixed bottom-[22px] right-[22px] flex flex-col gap-2.5 z-[80] max-w-[320px]"></div>
+
+<div id="overlay" class="hidden fixed inset-0 bg-[#141a1a]/[0.42] dark:bg-black/60 backdrop-blur-[2px] items-center justify-center p-5 z-50">
+  <div class="w-full max-w-[400px] bg-white dark:bg-[#1E2126] rounded-[24px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] px-[26px] pt-[26px] pb-[22px] shadow-[0_20px_60px_-20px_rgba(0,0,0,.35)]">
+    <h2 id="modalTitle" class="mb-[18px] text-[19px] font-extrabold tracking-[-0.01em]">New task</h2>
+
+    <div class="mb-[14px]">
+      <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1.5">Task</label>
+      <input type="text" id="fTitle" placeholder="e.g. Lower Body Focus" maxlength="60"
+        class="w-full border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl px-3 py-2.5 text-[14.5px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none transition-colors duration-150 focus:border-[#1E2126] dark:focus:border-[#E7E9EC] focus:bg-white dark:focus:bg-[#0F1013]">
+    </div>
+    <div id="fTitleErr" class="hidden text-[12.5px] text-[#C13535] font-semibold -mt-1.5 mb-2.5">Give the task a name.</div>
+
+    <div class="mb-[14px]">
+      <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1.5">Subject <span class="font-normal text-[#B7BBC2] dark:text-[#5B5F68] normal-case">(optional)</span></label>
+      <input type="text" id="fSubject" list="subjectList" placeholder="e.g. Biology" maxlength="30"
+        class="w-full border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl px-3 py-2.5 text-[14.5px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none transition-colors duration-150 focus:border-[#1E2126] dark:focus:border-[#E7E9EC] focus:bg-white dark:focus:bg-[#0F1013]">
+      <datalist id="subjectList"></datalist>
+    </div>
+
+    <div class="mb-[14px]">
+      <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1.5">Date</label>
+      <input type="date" id="fDate"
+        class="w-full border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl px-3 py-2.5 text-[14.5px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none transition-colors duration-150 focus:border-[#1E2126] dark:focus:border-[#E7E9EC] focus:bg-white dark:focus:bg-[#0F1013]">
+    </div>
+
+    <div class="flex gap-3">
+      <div class="flex-1 mb-[14px]">
+        <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1.5">Starts</label>
+        <input type="time" id="fStart"
+          class="w-full border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl px-3 py-2.5 text-[14.5px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none transition-colors duration-150 focus:border-[#1E2126] dark:focus:border-[#E7E9EC] focus:bg-white dark:focus:bg-[#0F1013]">
+      </div>
+      <div class="flex-1 mb-[14px]">
+        <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1.5">Ends</label>
+        <input type="time" id="fEnd"
+          class="w-full border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl px-3 py-2.5 text-[14.5px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none transition-colors duration-150 focus:border-[#1E2126] dark:focus:border-[#E7E9EC] focus:bg-white dark:focus:bg-[#0F1013]">
+      </div>
+    </div>
+    <div id="fTimeErr" class="hidden text-[12.5px] text-[#C13535] font-semibold -mt-1.5 mb-2.5">End time must be after start time.</div>
+
+    <div class="mb-[14px]">
+      <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1.5">Description <span class="font-normal text-[#B7BBC2] dark:text-[#5B5F68] normal-case">(optional)</span></label>
+      <textarea id="fDescription" rows="3" maxlength="200" placeholder="Add a few details..."
+        class="w-full border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl px-3 py-2.5 text-[14px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none transition-colors duration-150 focus:border-[#1E2126] dark:focus:border-[#E7E9EC] focus:bg-white dark:focus:bg-[#0F1013] resize-none placeholder:text-[#B7BBC2] dark:placeholder:text-[#5B5F68]"></textarea>
+    </div>
+
+    <div class="mb-[14px]">
+      <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1.5">Color</label>
+      <div id="swatches" class="flex gap-2.5 flex-wrap"></div>
+    </div>
+
+    <div class="flex gap-2.5 mt-5">
+      <button id="cancelBtn" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans transition-opacity duration-150 active:scale-[.98] bg-[#F1F2F4] dark:bg-[#26282D] text-[#1E2126] dark:text-[#E7E9EC] hover:bg-[#E7E8EB] dark:hover:bg-[#303339]">Cancel</button>
+      <button id="saveBtn" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans transition-opacity duration-150 active:scale-[.98] bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] hover:opacity-[.88]">Save task</button>
+    </div>
+    <button id="deleteFromModal" class="hidden bg-transparent border-none text-[#C13535] text-[13px] font-bold cursor-pointer pt-2 text-center w-full hover:underline">Delete this task</button>
+  </div>
+</div>
+
+<div id="apiKeyOverlay" class="hidden fixed inset-0 bg-[#141a1a]/[0.42] dark:bg-black/60 backdrop-blur-[2px] items-center justify-center p-5 z-50">
+  <div class="w-full max-w-[380px] bg-white dark:bg-[#1E2126] rounded-[24px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] px-[26px] pt-[26px] pb-[22px] shadow-[0_20px_60px_-20px_rgba(0,0,0,.35)]">
+    <h2 class="mb-2 text-[19px] font-extrabold tracking-[-0.01em]">Gemini API key</h2>
+    <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] mb-4 leading-relaxed">Used to paraphrase your sticky notes. Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" class="underline text-[#1E2126] dark:text-[#E7E9EC]">aistudio.google.com</a>. Saved only in this browser.</p>
+    <div class="mb-[14px]">
+      <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1.5">API key</label>
+      <input type="password" id="fApiKey" placeholder="AIza..." autocomplete="off"
+        class="w-full border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl px-3 py-2.5 text-[14.5px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none transition-colors duration-150 focus:border-[#1E2126] dark:focus:border-[#E7E9EC] focus:bg-white dark:focus:bg-[#0F1013]">
+    </div>
+    <div class="flex gap-2.5 mt-5">
+      <button id="apiKeyCancelBtn" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans transition-opacity duration-150 active:scale-[.98] bg-[#F1F2F4] dark:bg-[#26282D] text-[#1E2126] dark:text-[#E7E9EC] hover:bg-[#E7E8EB] dark:hover:bg-[#303339]">Cancel</button>
+      <button id="apiKeySaveBtn" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans transition-opacity duration-150 active:scale-[.98] bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] hover:opacity-[.88]">Save key</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW: Step-by-step onboarding wizard -->
+<div id="nameOverlay" class="hidden fixed inset-0 bg-[#141a1a]/[0.42] dark:bg-black/60 backdrop-blur-[2px] items-center justify-center p-5 z-[70]">
+  <div class="w-full max-w-[360px] bg-white dark:bg-[#1E2126] rounded-[24px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] px-[26px] pt-[30px] pb-[24px] shadow-[0_20px_60px_-20px_rgba(0,0,0,.35)] text-center animate-popIn">
+
+    <!-- step dots -->
+    <div id="onbDots" class="flex items-center justify-center gap-1.5 mb-5">
+      <span class="onb-dot w-[7px] h-[7px] rounded-full bg-[#1E2126] dark:bg-[#E7E9EC] transition-colors" data-step="1"></span>
+      <span class="onb-dot w-[7px] h-[7px] rounded-full bg-[#D7DBE1] dark:bg-[#33363D] transition-colors" data-step="2"></span>
+      <span class="onb-dot w-[7px] h-[7px] rounded-full bg-[#D7DBE1] dark:bg-[#33363D] transition-colors" data-step="3"></span>
+    </div>
+
+    <!-- Step 1: name -->
+    <div id="onbStep1" class="onb-step">
+      <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#F7A6A6] via-[#C13575] to-[#3A67D8] flex items-center justify-center text-white">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 13.5V7a1.5 1.5 0 0 1 3 0v5"/><path d="M14 12.2V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M17 12.5V8a1.5 1.5 0 0 1 3 0v7c0 3.5-2.5 6.5-6.5 6.5h-1c-2 0-3.3-.6-4.5-2l-3.3-3.9a1.4 1.4 0 0 1 2-2L8 15"/><path d="M8 13V9a1.5 1.5 0 0 1 3 0v4.3"/></svg>
+      </div>
+      <h2 class="text-[19px] font-extrabold tracking-[-0.01em] mb-1.5">Hi! What can I call you?</h2>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] mb-4 leading-relaxed">Used for your tickets and greetings — kept only on this device.</p>
+      <input type="text" id="fUserName" placeholder="e.g. Fuujin" maxlength="24" autocomplete="off"
+        class="w-full border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl px-3 py-2.5 text-[14.5px] font-sans text-center text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none transition-colors duration-150 focus:border-[#1E2126] dark:focus:border-[#E7E9EC] focus:bg-white dark:focus:bg-[#0F1013]">
+      <div id="fUserNameErr" class="hidden text-[12.5px] text-[#C13535] font-semibold mt-1.5">Type a name to continue.</div>
+      <button id="onbStep1Next" class="mt-4 w-full border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans transition-opacity duration-150 active:scale-[.98] bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] hover:opacity-[.88]">Continue</button>
+    </div>
+
+    <!-- Step 2: quick tour -->
+    <div id="onbStep2" class="onb-step hidden">
+      <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC]">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18"/><path d="M8 4v5"/></svg>
+      </div>
+      <h2 id="onbStep2Title" class="text-[19px] font-extrabold tracking-[-0.01em] mb-1.5">Here's the idea</h2>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] mb-5 leading-relaxed text-left">
+        <span class="block mb-2"><b class="text-[#1E2126] dark:text-[#E7E9EC]">1.</b> Tap "Add task" to create a ticket for anything you need to do today.</span>
+        <span class="block mb-2"><b class="text-[#1E2126] dark:text-[#E7E9EC]">2.</b> Tap the circle on a ticket to stamp it done — it'll fade and build your streak.</span>
+        <span class="block"><b class="text-[#1E2126] dark:text-[#E7E9EC]">3.</b> Use the menu for dark mode, reminders, notes, and backups.</span>
+      </p>
+      <div class="flex gap-2.5">
+        <button id="onbStep2Back" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#F1F2F4] dark:bg-[#26282D] text-[#1E2126] dark:text-[#E7E9EC] hover:bg-[#E7E8EB] dark:hover:bg-[#303339]">Back</button>
+        <button id="onbStep2Next" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] hover:opacity-[.88]">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 3: done -->
+    <div id="onbStep3" class="onb-step hidden">
+      <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-[#E7F4E9] flex items-center justify-center text-[#479456]">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <h2 id="onbStep3Title" class="text-[19px] font-extrabold tracking-[-0.01em] mb-1.5">You're all set</h2>
+      <p id="onbStep3Body" class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] mb-5 leading-relaxed">Let's get your day ticketed.</p>
+      <div class="flex gap-2.5">
+        <button id="onbStep3Back" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#F1F2F4] dark:bg-[#26282D] text-[#1E2126] dark:text-[#E7E9EC] hover:bg-[#E7E8EB] dark:hover:bg-[#303339]">Back</button>
+        <button id="nameSaveBtn" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] hover:opacity-[.88]">Let's go</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW: Clear data confirmation modal -->
+<div id="clearDataOverlay" class="hidden fixed inset-0 bg-[#141a1a]/[0.42] dark:bg-black/60 backdrop-blur-[2px] items-center justify-center p-5 z-[70]">
+  <div class="w-full max-w-[360px] bg-white dark:bg-[#1E2126] rounded-[24px] border-2 border-dashed border-[#C13535]/60 px-[26px] pt-[26px] pb-[22px] shadow-[0_20px_60px_-20px_rgba(0,0,0,.35)] text-center animate-popIn">
+    <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-[#FCEAE7] flex items-center justify-center text-[#C13535]">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+    </div>
+    <h2 class="text-[19px] font-extrabold tracking-[-0.01em] mb-1.5">Clear all data?</h2>
+    <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] mb-5 leading-relaxed">This deletes every task, note, your name, streak, saved API key, and preferences from this browser. This can't be undone — export a backup first if you want to keep anything.</p>
+    <div class="flex gap-2.5">
+      <button id="clearDataCancelBtn" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#F1F2F4] dark:bg-[#26282D] text-[#1E2126] dark:text-[#E7E9EC] hover:bg-[#E7E8EB] dark:hover:bg-[#303339]">Cancel</button>
+      <button id="clearDataConfirmBtn" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#C13535] text-white hover:opacity-[.88]">Clear everything</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW: Class schedule modal -->
+<div id="scheduleOverlay" class="hidden fixed inset-0 bg-[#141a1a]/[0.42] dark:bg-black/60 backdrop-blur-[2px] items-center justify-center p-5 z-[70]">
+  <div class="w-full max-w-[420px] max-h-[85vh] overflow-y-auto bg-white dark:bg-[#1E2126] rounded-[24px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] px-[26px] pt-[26px] pb-[22px] shadow-[0_20px_60px_-20px_rgba(0,0,0,.35)]">
+    <div class="flex items-center justify-between mb-1">
+      <h2 class="text-[19px] font-extrabold tracking-[-0.01em]">Class schedule</h2>
+      <button id="scheduleCloseBtn" class="w-8 h-8 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#8A8F98] dark:text-[#9AA3AE] hover:text-[#1E2126] dark:hover:text-white">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] mb-4 leading-relaxed">Set your weekly classes once, then generate tickets for them automatically each week.</p>
+
+    <div id="scheduleList" class="flex flex-col gap-2.5 mb-4"></div>
+
+    <button id="scheduleAddRowBtn" class="w-full border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] rounded-xl py-2.5 text-[13px] font-bold text-[#8A8F98] dark:text-[#9AA3AE] hover:text-[#1E2126] dark:hover:text-white hover:border-[#B7BBC2] dark:hover:border-[#4A4E57] transition-colors mb-4">+ Add class</button>
+
+    <button id="scheduleGenerateBtn" class="w-full border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] hover:opacity-[.88] flex items-center justify-center gap-2">
+      Generate this week's tickets
+    </button>
+    <p class="text-[11.5px] text-[#B7BBC2] dark:text-[#5B5F68] mt-2 text-center leading-relaxed">Won't duplicate tickets already made from this schedule.</p>
+  </div>
+</div>
+
+<!-- NEW: Study buddy share modal -->
+<div id="shareOverlay" class="hidden fixed inset-0 bg-[#141a1a]/[0.42] dark:bg-black/60 backdrop-blur-[2px] items-center justify-center p-5 z-[70]">
+  <div class="w-full max-w-[380px] bg-white dark:bg-[#1E2126] rounded-[24px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] px-[26px] pt-[26px] pb-[22px] shadow-[0_20px_60px_-20px_rgba(0,0,0,.35)] text-center">
+    <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#F7A6A6] via-[#C13575] to-[#3A67D8] flex items-center justify-center text-white">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-3.9M8.6 13.5l6.8 3.9"/></svg>
+    </div>
+    <h2 class="text-[19px] font-extrabold tracking-[-0.01em] mb-1.5">Study buddy link</h2>
+    <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] mb-4 leading-relaxed">Share your streak and open tasks with a friend. They'll see a read-only snapshot and can compare it with theirs — no accounts needed.</p>
+    <div class="flex gap-2 mb-3">
+      <input type="text" id="shareLinkOutput" readonly class="flex-1 border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl px-3 py-2.5 text-[12.5px] font-mono text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none">
+      <button id="shareCopyBtn" class="shrink-0 border-none rounded-xl px-4 font-bold text-sm cursor-pointer font-sans bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] hover:opacity-[.88]">Copy</button>
+    </div>
+    <button id="shareCloseBtn" class="w-full border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#F1F2F4] dark:bg-[#26282D] text-[#1E2126] dark:text-[#E7E9EC] hover:bg-[#E7E8EB] dark:hover:bg-[#303339]">Close</button>
+  </div>
+</div>
+
+<!-- NEW: Read-only compare screen (shown when opening someone's buddy link) -->
+<div id="compareOverlay" class="hidden fixed inset-0 bg-[#EDEFF2] dark:bg-[#15171B] z-[90] items-center justify-center p-5">
+  <div class="w-full max-w-[400px]">
+    <div class="bg-white dark:bg-[#1E2126] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] rounded-[24px] px-[26px] pt-[26px] pb-[22px] shadow-[0_20px_60px_-20px_rgba(0,0,0,.35)]">
+      <p class="font-mono text-[10.5px] font-bold uppercase tracking-[.14em] text-[#3A67D8] mb-2">Study buddy snapshot</p>
+      <h2 class="text-[21px] font-extrabold tracking-[-0.01em] mb-4">Yours vs. theirs</h2>
+
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="rounded-[18px] border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] p-4">
+          <p class="font-mono text-[10px] font-bold uppercase tracking-[.06em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1" id="compareYouLabel">You</p>
+          <p class="text-[26px] font-extrabold leading-none mb-1" id="compareYouStreak">0</p>
+          <p class="text-[11px] text-[#8A8F98] dark:text-[#9AA3AE]">day streak</p>
+          <p class="text-[12px] font-semibold mt-2" id="compareYouTasks">0 open tasks</p>
+        </div>
+        <div class="rounded-[18px] border-[1.5px] border-[#3A67D8]/30 bg-[#E7EFFD] dark:bg-[#1B2436] p-4">
+          <p class="font-mono text-[10px] font-bold uppercase tracking-[.06em] text-[#3A67D8] mb-1" id="compareThemLabel">Buddy</p>
+          <p class="text-[26px] font-extrabold leading-none mb-1 text-[#3A67D8]" id="compareThemStreak">0</p>
+          <p class="text-[11px] text-[#3A67D8]">day streak</p>
+          <p class="text-[12px] font-semibold mt-2 text-[#3A67D8]" id="compareThemTasks">0 open tasks</p>
+        </div>
+      </div>
+
+      <p id="compareMsg" class="text-[13px] font-semibold text-center mb-4"></p>
+
+      <button id="compareEnterBtn" class="w-full border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] hover:opacity-[.88]">Go to my tickets</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'ticket_todo_tasks_v1';
+  const DARK_MODE_KEY = 'ticket_todo_dark_mode_v1';
+
+  // Shared SVG icons (no emoji anywhere in the UI)
+  const WAVE_SVG = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 13.5V7a1.5 1.5 0 0 1 3 0v5"/><path d="M14 12.2V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M17 12.5V8a1.5 1.5 0 0 1 3 0v7c0 3.5-2.5 6.5-6.5 6.5h-1c-2 0-3.3-.6-4.5-2l-3.3-3.9a1.4 1.4 0 0 1 2-2L8 15"/><path d="M8 13V9a1.5 1.5 0 0 1 3 0v4.3"/></svg>';
+  const FLAME_SVG = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s-5 5.5-5 10a5 5 0 0 0 10 0c0-1.4-.6-2.4-1.2-3.3-.3.9-.9 1.6-1.8 1.6-1.2 0-1.4-1-1.2-2 .2-1 .4-2.3-.8-6.3z"/></svg>';
+  const STAMP_CHECK_SVG = '<svg viewBox="0 0 40 40" width="40" height="40" fill="none"><circle cx="20" cy="20" r="17" stroke="currentColor" stroke-width="2.4" stroke-dasharray="3.2 3.2"/><path d="M12.5 20.5l4.8 4.8L28 14" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const PARTY_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l6-16 11 11-16 5z"/><path d="M13 8l3-3M17 12l3-3M9 4l2-2"/></svg>';
+  const TRASH_BIG_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+  const IMAGE_SVG = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2.5"/><circle cx="9" cy="9" r="1.8"/><path d="M21 15l-5.5-5.5a2 2 0 0 0-2.8 0L3 19"/></svg>';
+
+  // ---- Dark mode ----
+  const menuDarkToggle = document.getElementById('menuDarkToggle');
+  const menuDarkIconMoon = document.getElementById('menuDarkIconMoon');
+  const menuDarkIconSun = document.getElementById('menuDarkIconSun');
+  const menuDarkPill = document.getElementById('menuDarkPill');
+  const menuDarkKnob = document.getElementById('menuDarkKnob');
+
+  function applyDarkMode(isDark){
+    document.documentElement.classList.toggle('dark', isDark);
+    menuDarkIconMoon.classList.toggle('hidden', isDark);
+    menuDarkIconSun.classList.toggle('hidden', !isDark);
+    menuDarkPill.classList.toggle('bg-[#3A67D8]', isDark);
+    menuDarkPill.classList.toggle('bg-[#D7DBE1]', !isDark);
+    menuDarkKnob.style.transform = isDark ? 'translateX(16px)' : 'translateX(0)';
+  }
+  let darkMode = localStorage.getItem(DARK_MODE_KEY) === '1';
+  applyDarkMode(darkMode);
+  menuDarkToggle.addEventListener('click', ()=>{
+    darkMode = !darkMode;
+    localStorage.setItem(DARK_MODE_KEY, darkMode ? '1' : '0');
+    applyDarkMode(darkMode);
+  });
+
+  // ---- User name + step-by-step onboarding wizard ----
+  const USER_NAME_KEY = 'ticket_todo_user_name_v1';
+  const ONBOARDED_KEY = 'ticket_todo_onboarded_v1';
+  let userName = localStorage.getItem(USER_NAME_KEY) || '';
+
+  const nameOverlay = document.getElementById('nameOverlay');
+  const fUserName = document.getElementById('fUserName');
+  const fUserNameErr = document.getElementById('fUserNameErr');
+  const nameSaveBtn = document.getElementById('nameSaveBtn');
+  const menuNameBtn = document.getElementById('menuNameBtn');
+  const onbDots = document.querySelectorAll('.onb-dot');
+  const onbSteps = { 1: document.getElementById('onbStep1'), 2: document.getElementById('onbStep2'), 3: document.getElementById('onbStep3') };
+  let onbCurrentStep = 1;
+  let onbRenameOnly = false; // true when reopened from "Change name" (skip tour)
+
+  function applyUserName(name){
+    userName = name;
+    const initial = name ? name.trim().charAt(0).toUpperCase() : '?';
+    document.getElementById('sidebarName').textContent = name || 'Friend';
+    document.getElementById('menuName').textContent = name || 'Friend';
+    document.getElementById('sidebarAvatar').textContent = initial;
+    document.getElementById('menuAvatar').textContent = initial;
+  }
+
+  function goToOnbStep(n){
+    onbCurrentStep = n;
+    Object.entries(onbSteps).forEach(([k, el])=>{
+      el.classList.toggle('hidden', Number(k) !== n);
+    });
+    onbDots.forEach(dot=>{
+      const active = Number(dot.dataset.step) === n;
+      dot.classList.toggle('bg-[#1E2126]', active);
+      dot.classList.toggle('dark:bg-[#E7E9EC]', active);
+      dot.classList.toggle('bg-[#D7DBE1]', !active);
+      dot.classList.toggle('dark:bg-[#33363D]', !active);
+    });
+    if(n === 3){
+      const title = document.getElementById('onbStep3Title');
+      const body = document.getElementById('onbStep3Body');
+      const name = fUserName.value.trim() || userName;
+      title.textContent = onbRenameOnly ? 'Name updated' : `You're all set, ${name || 'friend'}`;
+      body.textContent = onbRenameOnly ? `You'll now be greeted as ${name}.` : "Let's get your day ticketed.";
+    }
+    if(n === 1) setTimeout(()=> fUserName.focus(), 60);
+  }
+
+  function openNamePrompt(prefill, renameOnly){
+    onbRenameOnly = !!renameOnly;
+    fUserName.value = prefill || '';
+    fUserNameErr.classList.add('hidden');
+    nameOverlay.classList.remove('hidden');
+    nameOverlay.classList.add('flex');
+    goToOnbStep(1);
+  }
+  function closeNamePrompt(){
+    nameOverlay.classList.add('hidden');
+    nameOverlay.classList.remove('flex');
+  }
+
+  document.getElementById('onbStep1Next').addEventListener('click', ()=>{
+    const name = fUserName.value.trim();
+    if(!name){
+      fUserNameErr.classList.remove('hidden');
+      return;
+    }
+    fUserNameErr.classList.add('hidden');
+    goToOnbStep(onbRenameOnly ? 3 : 2);
+  });
+  fUserName.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') document.getElementById('onbStep1Next').click(); });
+  document.getElementById('onbStep2Back').addEventListener('click', ()=> goToOnbStep(1));
+  document.getElementById('onbStep2Next').addEventListener('click', ()=> goToOnbStep(3));
+  document.getElementById('onbStep3Back').addEventListener('click', ()=> goToOnbStep(onbRenameOnly ? 1 : 2));
+
+  function saveUserName(){
+    const name = fUserName.value.trim();
+    if(!name){
+      goToOnbStep(1);
+      fUserNameErr.classList.remove('hidden');
+      return;
+    }
+    const isFirstTime = !userName;
+    localStorage.setItem(USER_NAME_KEY, name);
+    localStorage.setItem(ONBOARDED_KEY, '1');
+    applyUserName(name);
+    closeNamePrompt();
+    showGreeting(isFirstTime ? `Nice to meet you, ${name}! Let's get your day ticketed.` : null);
+  }
+  nameSaveBtn.addEventListener('click', saveUserName);
+
+  menuNameBtn.addEventListener('click', ()=>{
+    closeProfileMenu();
+    openNamePrompt(userName, true);
+  });
+
+  // ---- Clear all data ----
+  const clearDataOverlay = document.getElementById('clearDataOverlay');
+  const menuClearDataBtn = document.getElementById('menuClearDataBtn');
+  const clearDataCancelBtn = document.getElementById('clearDataCancelBtn');
+  const clearDataConfirmBtn = document.getElementById('clearDataConfirmBtn');
+
+  menuClearDataBtn.addEventListener('click', ()=>{
+    closeProfileMenu();
+    clearDataOverlay.classList.remove('hidden');
+    clearDataOverlay.classList.add('flex');
+  });
+  clearDataCancelBtn.addEventListener('click', ()=>{
+    clearDataOverlay.classList.add('hidden');
+    clearDataOverlay.classList.remove('flex');
+  });
+  clearDataOverlay.addEventListener('click', (e)=>{
+    if(e.target === clearDataOverlay){
+      clearDataOverlay.classList.add('hidden');
+      clearDataOverlay.classList.remove('flex');
+    }
+  });
+  clearDataConfirmBtn.addEventListener('click', ()=>{
+    const keysToClear = [
+      'ticket_todo_tasks_v1', 'ticket_todo_dark_mode_v1', 'ticket_todo_user_name_v1',
+      'ticket_todo_onboarded_v1', 'ticket_todo_notify_enabled_v1', 'ticket_todo_notified_v1',
+      'ticket_todo_gemini_key_v1', 'ticket_todo_notes_v1', 'ticket_todo_completed_log_v1',
+      'ticket_todo_class_schedule_v1', 'ticket_todo_schedule_generated_v1'
+    ];
+    keysToClear.forEach(k => localStorage.removeItem(k));
+    location.reload();
+  });
+
+  // ---- Profile menu + greeting ----
+  const profileBtn = document.getElementById('profileBtn');
+  const profileMenu = document.getElementById('profileMenu');
+  const greetBubble = document.getElementById('greetBubble');
+  const greetText = document.getElementById('greetText');
+
+  function openProfileMenu(){
+    profileMenu.classList.remove('hidden');
+    requestAnimationFrame(()=>{
+      profileMenu.classList.remove('opacity-0', 'scale-95', '-translate-y-1');
+    });
+  }
+  function closeProfileMenu(){
+    profileMenu.classList.add('opacity-0', 'scale-95', '-translate-y-1');
+    setTimeout(()=> profileMenu.classList.add('hidden'), 150);
+  }
+  profileBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    hideGreeting();
+    if(profileMenu.classList.contains('hidden')){
+      openProfileMenu();
+    } else {
+      closeProfileMenu();
+    }
+  });
+  document.addEventListener('click', (e)=>{
+    if(!profileMenu.classList.contains('hidden') &&
+       !profileMenu.contains(e.target) &&
+       e.target !== profileBtn){
+      closeProfileMenu();
+    }
+  });
+
+  function hideGreeting(){
+    greetBubble.classList.add('opacity-0', 'translate-y-1');
+    setTimeout(()=> greetBubble.classList.add('hidden'), 200);
+  }
+  function showGreeting(customMsg){
+    const name = userName || 'there';
+    const hour = new Date().getHours();
+    const msg = customMsg || (
+      hour < 5 ? `Up late, ${name}?` :
+      hour < 12 ? `Good morning, ${name}!` :
+      hour < 18 ? `Good afternoon, ${name}!` :
+      `Good evening, ${name}!`
+    );
+    greetText.textContent = msg;
+    greetBubble.classList.remove('hidden');
+    requestAnimationFrame(()=>{
+      greetBubble.classList.remove('opacity-0', 'translate-y-1');
+    });
+    setTimeout(hideGreeting, 4500);
+  }
+  greetBubble.addEventListener('click', hideGreeting);
+
+  // Tailwind color tokens per task theme (kept in JS since values are picked dynamically per task)
+  const THEMES = {
+    coral:  { bg: '#FCEAE7', ac: '#DD5B44' },
+    pink:   { bg: '#FAE6EF', ac: '#C13575' },
+    blue:   { bg: '#E7EFFD', ac: '#3A67D8' },
+    green:  { bg: '#E7F4E9', ac: '#479456' },
+    amber:  { bg: '#FCF1DF', ac: '#D9932A' },
+    violet: { bg: '#EFEAFB', ac: '#7B57D6' }
+  };
+  const THEME_KEYS = Object.keys(THEMES);
+
+  function themeRowClasses(key){
+    const t = THEMES[key] || THEMES.coral;
+    return `bg-[${t.bg}] border-[${t.ac}] text-[${t.ac}]`;
+  }
+  function themeBadgeClasses(key){
+    const t = THEMES[key] || THEMES.coral;
+    return `bg-[${t.ac}]/15 text-[${t.ac}]`;
+  }
+
+  // Same subject name always maps to the same color, without needing a picker or extra storage.
+  function subjectColorKey(subject){
+    let hash = 0;
+    const s = subject.trim().toLowerCase();
+    for(let i=0; i<s.length; i++){ hash = (hash * 31 + s.charCodeAt(i)) | 0; }
+    return THEME_KEYS[Math.abs(hash) % THEME_KEYS.length];
+  }
+  function subjectPillClasses(subject){
+    return themeBadgeClasses(subjectColorKey(subject));
+  }
+  function normalizeSubject(s){
+    return (s || '').trim();
+  }
+  function allKnownSubjects(){
+    const set = new Set();
+    tasks.forEach(t => { if(t.subject) set.add(t.subject); });
+    notes.forEach(n => { if(n.subject) set.add(n.subject); });
+    return [...set].sort((a,b)=> a.localeCompare(b));
+  }
+  function refreshSubjectDatalist(){
+    const dl = document.getElementById('subjectList');
+    if(!dl) return;
+    dl.innerHTML = allKnownSubjects().map(s => `<option value="${escapeHtml(s)}"></option>`).join('');
+  }
+
+  let activeSubjectFilter = null;
+
+  let tasks = loadTasks();
+  let editingId = null;
+
+  function loadTasks(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      // migrate: ensure "done" field exists
+      return parsed.map(t => ({ done: false, ...t }));
+    }catch(e){ return []; }
+  }
+  function saveTasks(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  }
+  function uid(){
+    return 't_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8);
+  }
+
+  function todayISO(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function fmtHeader(dateStr){
+    const [y,m,d] = dateStr.split('-').map(Number);
+    const dt = new Date(y, m-1, d);
+    const weekday = dt.toLocaleDateString('en-US', {weekday:'short'}).toUpperCase();
+    const month = dt.toLocaleDateString('en-US', {month:'short'}).toUpperCase();
+    const isToday = dateStr === todayISO();
+    return {
+      dayLabel: isToday ? `TODAY, <b class="text-[#1E2126] font-bold">${weekday}</b>` : `<b class="text-[#1E2126] font-bold">${weekday}</b>`,
+      dateLabel: `${String(d).padStart(2,'0')} ${month}`
+    };
+  }
+
+  function fmtTime(t){
+    if(!t) return '';
+    let [h,m] = t.split(':').map(Number);
+    const ap = h >= 12 ? 'pm' : 'am';
+    h = h % 12; if(h===0) h = 12;
+    return `${h}:${String(m).padStart(2,'0')} ${ap}`;
+  }
+
+  function durationLabel(start, end){
+    if(!start || !end) return '';
+    const [sh,sm] = start.split(':').map(Number);
+    const [eh,em] = end.split(':').map(Number);
+    let mins = (eh*60+em) - (sh*60+sm);
+    if(mins <= 0) mins += 24*60;
+    const h = Math.floor(mins/60), m = mins % 60;
+    if(h && m) return `${h}h ${m}m`;
+    if(h) return `${h}h`;
+    return `${m}m`;
+  }
+
+  // Deterministic pseudo-random tilt so the same task always tilts the same way.
+  function tiltForId(id){
+    let hash = 0;
+    for(let i=0; i<id.length; i++){ hash = (hash * 31 + id.charCodeAt(i)) | 0; }
+    const bucket = Math.abs(hash) % 5;
+    if(bucket === 0) return -2.4;
+    if(bucket === 1) return 1.8;
+    return 0;
+  }
+
+  function taskSubjects(){
+    const set = new Set();
+    tasks.forEach(t => { if(t.subject) set.add(t.subject); });
+    return [...set].sort((a,b)=> a.localeCompare(b));
+  }
+
+  function renderSubjectFilters(){
+    const bar = document.getElementById('subjectFilters');
+    if(!bar) return;
+    const subjects = taskSubjects();
+    if(subjects.length === 0){
+      bar.innerHTML = '';
+      bar.classList.add('hidden');
+      bar.classList.remove('flex');
+      return;
+    }
+    bar.classList.remove('hidden');
+    bar.classList.add('flex');
+    const chip = (label, key, active) => `
+      <button data-filter="${key === null ? '' : escapeHtml(key)}"
+        class="filter-chip shrink-0 font-mono text-[11px] font-bold uppercase tracking-[.04em] px-3 py-[6px] rounded-full border-[1.5px] transition-colors duration-150 ${
+          active
+            ? 'bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] border-[#1E2126] dark:border-[#E7E9EC]'
+            : 'bg-transparent text-[#8A8F98] dark:text-[#9AA3AE] border-[#D7DBE1] dark:border-[#33363D] hover:border-[#B7BBC2] dark:hover:border-[#4A4E57]'
+        }">${escapeHtml(label)}</button>`;
+    bar.innerHTML = chip('All', null, !activeSubjectFilter) +
+      subjects.map(s => chip(s, s, activeSubjectFilter === s)).join('');
+    bar.querySelectorAll('.filter-chip').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        activeSubjectFilter = btn.dataset.filter || null;
+        render();
+      });
+    });
+  }
+
+  // ---- Completion streak ----
+  const COMPLETED_LOG_KEY = 'ticket_todo_completed_log_v1';
+  function getCompletedLog(){
+    try{ return JSON.parse(localStorage.getItem(COMPLETED_LOG_KEY)) || {}; }
+    catch(e){ return {}; }
+  }
+  function markCompletedToday(){
+    const log = getCompletedLog();
+    log[todayISO()] = true;
+    localStorage.setItem(COMPLETED_LOG_KEY, JSON.stringify(log));
+    updateStreakUI();
+  }
+  function computeStreak(){
+    const log = getCompletedLog();
+    let streak = 0;
+    let cursor = new Date();
+    // if today has no completion yet, streak still counts backward from yesterday
+    if(!log[todayISO()]) cursor.setDate(cursor.getDate() - 1);
+    while(true){
+      const iso = cursor.getFullYear() + '-' + String(cursor.getMonth()+1).padStart(2,'0') + '-' + String(cursor.getDate()).padStart(2,'0');
+      if(log[iso]){
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+  function updateStreakUI(){
+    const streak = computeStreak();
+    const label = document.getElementById('streakLabel');
+    const countEl = document.getElementById('streakCount');
+    const flameEl = document.getElementById('streakFlame');
+    if(flameEl && !flameEl.innerHTML) flameEl.innerHTML = FLAME_SVG;
+    if(streak > 0){
+      countEl.textContent = streak;
+      label.classList.remove('hidden');
+      label.classList.add('flex');
+    } else {
+      label.classList.add('hidden');
+      label.classList.remove('flex');
+    }
+  }
+
+  function render(){
+    const wrap = document.getElementById('tickets');
+    const countEl = document.getElementById('count');
+    const openCount = tasks.filter(t=>!t.done).length;
+    countEl.textContent = openCount === 1 ? '1 task' : `${openCount} tasks`;
+
+    if(activeSubjectFilter && !taskSubjects().includes(activeSubjectFilter)){
+      activeSubjectFilter = null;
+    }
+
+    renderSubjectFilters();
+    refreshSubjectDatalist();
+    updateStreakUI();
+
+    if(tasks.length === 0){
+      wrap.innerHTML = `<p class="text-center text-[#B7BBC2] dark:text-[#5B5F68] text-[13.5px] px-2.5 pt-1.5 pb-0.5">No tasks yet — tap "Add task" below to start your day.</p>`;
+      return;
+    }
+
+    const visible = activeSubjectFilter ? tasks.filter(t => t.subject === activeSubjectFilter) : tasks;
+
+    if(visible.length === 0){
+      wrap.innerHTML = `<p class="text-center text-[#B7BBC2] dark:text-[#5B5F68] text-[13.5px] px-2.5 pt-1.5 pb-0.5">No "${escapeHtml(activeSubjectFilter)}" tasks yet.</p>`;
+      return;
+    }
+
+    const sorted = [...visible].sort((a,b)=>{
+      if(!!a.done !== !!b.done) return a.done ? 1 : -1;
+      if(a.date !== b.date) return a.date < b.date ? -1 : 1;
+      return (a.start||'') < (b.start||'') ? -1 : 1;
+    });
+
+    wrap.innerHTML = sorted.map(t => {
+      const h = fmtHeader(t.date);
+      const themeKey = THEME_KEYS.includes(t.color) ? t.color : 'coral';
+      const dur = durationLabel(t.start, t.end);
+      const timeStr = (t.start && t.end) ? `${fmtTime(t.start)} - ${fmtTime(t.end)}` : (t.start ? fmtTime(t.start) : '');
+      const tilt = tiltForId(t.id);
+      const subjectPill = t.subject ? `<span class="font-mono text-[10px] font-bold uppercase tracking-[.06em] px-[8px] py-[3px] rounded-full whitespace-nowrap mb-1.5 inline-block ${subjectPillClasses(t.subject)}">${escapeHtml(t.subject)}</span>` : '';
+      const scheduleBadge = t.fromSchedule ? `<span class="font-mono text-[9px] font-bold uppercase tracking-[.06em] px-[7px] py-[2px] rounded-full whitespace-nowrap mb-1.5 ml-1 inline-block bg-[#1E2126]/8 text-[#1E2126]/50">Class</span>` : '';
+      const doneClasses = t.done ? 'opacity-55 saturate-[.35]' : '';
+
+      return `
+        <div class="ticket-wrap relative cursor-pointer group ${doneClasses} transition-opacity duration-300" data-id="${t.id}" style="--tilt:${tilt}deg">
+          <div class="absolute inset-0 bg-white dark:bg-[#1E2126] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] rounded-[22px] [transform:translate(5px,6px)_rotate(calc(var(--tilt)_+_0.4deg))] transition-transform duration-200 group-hover:[transform:translate(7px,9px)_rotate(calc(var(--tilt)_+_1deg))]"></div>
+          <div class="relative z-10 bg-white dark:bg-[#1E2126] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] rounded-[22px] px-5 pt-[18px] pb-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_10px_24px_-12px_rgba(20,22,26,.12)] [transform:rotate(var(--tilt))] transition-transform duration-[280ms] group-hover:[transform:rotate(calc(var(--tilt)_-_1.4deg))_translateY(-3px)] group-active:[transform:rotate(calc(var(--tilt)_-_0.6deg))_translateY(-1px)_scale(.995)] overflow-hidden">
+            ${t.done ? `<div class="pointer-events-none absolute top-2.5 right-3.5 z-20 text-[#479456] [transform:rotate(-14deg)] animate-stampPop select-none opacity-[.88]">${STAMP_CHECK_SVG}</div>` : ''}
+            <div class="flex items-center justify-between pb-[14px] mb-[14px] border-b-[1.5px] border-dashed border-[#D7DBE1] dark:border-[#33363D] text-[13px] tracking-[.04em]">
+              <span class="text-[#B7BBC2] dark:text-[#5B5F68] font-medium uppercase">${h.dayLabel}</span>
+              <span class="text-[#B7BBC2] dark:text-[#5B5F68] font-semibold uppercase">${h.dateLabel}</span>
+            </div>
+            <div class="relative flex items-start justify-between gap-2.5 rounded-[14px] px-4 py-[14px] border-l-4 ${themeRowClasses(themeKey)}">
+              <button class="done-btn mt-0.5 w-[19px] h-[19px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors duration-150 ${t.done ? 'bg-[#479456] border-[#479456]' : 'border-[#1E2126]/25 hover:border-[#1E2126]/50'}" data-done="${t.id}" title="Mark done">
+                <svg class="${t.done ? '' : 'hidden'}" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="white" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+              </button>
+              <div class="flex-1 min-w-0">
+                ${subjectPill}${scheduleBadge}
+                <p class="font-bold text-[15.5px] mb-1 leading-[1.25] break-words text-[#1E2126] ${t.done ? 'line-through' : ''}">${escapeHtml(t.title)}</p>
+                ${timeStr ? `<p class="text-[13px] font-medium opacity-85 text-[#1E2126]">${timeStr}</p>` : ''}
+                ${t.description ? `<p class="text-[12.5px] font-medium opacity-70 text-[#1E2126] mt-1 leading-[1.35] line-clamp-2">${escapeHtml(t.description)}</p>` : ''}
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                ${dur ? `<span class="font-mono text-[11.5px] font-bold px-[9px] py-1 rounded-full whitespace-nowrap ${themeBadgeClasses(themeKey)}">${dur}</span>` : ''}
+                <button class="del-btn w-6 h-6 rounded-full bg-white/65 flex items-center justify-center opacity-0 scale-[.7] transition-all duration-150 group-hover:opacity-100 group-hover:scale-100 hover:bg-white/95" data-del="${t.id}" title="Delete">
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    wrap.querySelectorAll('.del-btn').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        deleteTaskWithUndo(btn.dataset.del);
+      });
+    });
+
+    wrap.querySelectorAll('.done-btn').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        toggleDone(btn.dataset.done);
+      });
+    });
+
+    wrap.querySelectorAll('.ticket-wrap').forEach(el=>{
+      el.addEventListener('click', ()=> openEdit(el.dataset.id));
+    });
+  }
+
+  function toggleDone(id){
+    const t = tasks.find(x=>x.id===id);
+    if(!t) return;
+    t.done = !t.done;
+    saveTasks();
+    if(t.done){
+      markCompletedToday();
+      showToast(`"${t.title}" stamped done.`);
+    }
+    render();
+  }
+
+  function escapeHtml(s){
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  // ---- Modal logic ----
+  const overlay = document.getElementById('overlay');
+  const modalTitle = document.getElementById('modalTitle');
+  const fTitle = document.getElementById('fTitle');
+  const fSubject = document.getElementById('fSubject');
+  const fDate = document.getElementById('fDate');
+  const fStart = document.getElementById('fStart');
+  const fEnd = document.getElementById('fEnd');
+  const fDescription = document.getElementById('fDescription');
+  const fTitleErr = document.getElementById('fTitleErr');
+  const fTimeErr = document.getElementById('fTimeErr');
+  const deleteFromModal = document.getElementById('deleteFromModal');
+  const swatchesEl = document.getElementById('swatches');
+
+  let selectedColor = 'coral';
+
+  swatchesEl.innerHTML = THEME_KEYS.map(c => `
+    <button type="button" class="swatch w-[30px] h-[30px] rounded-full border-2 border-transparent relative transition-transform duration-150 hover:scale-105" style="background:${THEMES[c].ac}" data-color="${c}">
+      <svg class="check-icon hidden absolute inset-0 m-auto" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+    </button>
+  `).join('');
+
+  swatchesEl.querySelectorAll('.swatch').forEach(sw=>{
+    sw.addEventListener('click', ()=>{
+      selectedColor = sw.dataset.color;
+      refreshSwatchSelection();
+    });
+  });
+  function refreshSwatchSelection(){
+    swatchesEl.querySelectorAll('.swatch').forEach(sw=>{
+      const selected = sw.dataset.color === selectedColor;
+      sw.classList.toggle('border-[#1E2126]', selected);
+      sw.classList.toggle('border-transparent', !selected);
+      sw.querySelector('.check-icon').classList.toggle('hidden', !selected);
+    });
+  }
+
+  function openAdd(){
+    editingId = null;
+    modalTitle.textContent = 'New task';
+    fTitle.value = '';
+    fSubject.value = '';
+    fDate.value = todayISO();
+    fStart.value = '17:00';
+    fEnd.value = '18:00';
+    fDescription.value = '';
+    selectedColor = THEME_KEYS[Math.floor(Math.random()*THEME_KEYS.length)];
+    refreshSwatchSelection();
+    deleteFromModal.classList.add('hidden');
+    fTitleErr.classList.add('hidden');
+    fTimeErr.classList.add('hidden');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    setTimeout(()=>fTitle.focus(), 50);
+  }
+
+  function openEdit(id){
+    const t = tasks.find(x=>x.id===id);
+    if(!t) return;
+    editingId = id;
+    modalTitle.textContent = 'Edit task';
+    fTitle.value = t.title;
+    fSubject.value = t.subject || '';
+    fDate.value = t.date;
+    fStart.value = t.start || '';
+    fEnd.value = t.end || '';
+    fDescription.value = t.description || '';
+    selectedColor = t.color;
+    refreshSwatchSelection();
+    deleteFromModal.classList.remove('hidden');
+    fTitleErr.classList.add('hidden');
+    fTimeErr.classList.add('hidden');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+  }
+
+  function closeModal(){
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+  }
+
+  document.getElementById('openAdd').addEventListener('click', openAdd);
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeModal(); });
+
+  document.getElementById('saveBtn').addEventListener('click', ()=>{
+    const title = fTitle.value.trim();
+    let valid = true;
+    if(!title){
+      fTitleErr.classList.remove('hidden');
+      valid = false;
+    } else {
+      fTitleErr.classList.add('hidden');
+    }
+    if(fStart.value && fEnd.value && fStart.value === fEnd.value){
+      fTimeErr.classList.remove('hidden');
+      valid = false;
+    } else {
+      fTimeErr.classList.add('hidden');
+    }
+    if(!valid) return;
+
+    const data = {
+      title,
+      subject: normalizeSubject(fSubject.value),
+      date: fDate.value || todayISO(),
+      start: fStart.value,
+      end: fEnd.value,
+      description: fDescription.value.trim(),
+      color: selectedColor
+    };
+
+    if(editingId){
+      const idx = tasks.findIndex(t=>t.id===editingId);
+      if(idx > -1) tasks[idx] = {...tasks[idx], ...data};
+    } else {
+      tasks.push({ id: uid(), done: false, ...data });
+    }
+    saveTasks();
+    render();
+    closeModal();
+  });
+
+  deleteFromModal.addEventListener('click', ()=>{
+    if(!editingId) return;
+    deleteTaskWithUndo(editingId);
+    closeModal();
+  });
+
+  // ---- Undo delete ----
+  function deleteTaskWithUndo(id){
+    const idx = tasks.findIndex(t=>t.id===id);
+    if(idx === -1) return;
+    const [removed] = tasks.splice(idx, 1);
+    saveTasks();
+    render();
+    showUndoToast(`"${removed.title}" deleted.`, ()=>{
+      tasks.splice(idx, 0, removed);
+      saveTasks();
+      render();
+    });
+  }
+
+  // ---- Ping when a task ends ----
+  const NOTIFY_KEY = 'ticket_todo_notify_enabled_v1';
+  const NOTIFIED_KEY = 'ticket_todo_notified_v1';
+  const menuReminderToggle = document.getElementById('menuReminderToggle');
+  const menuReminderPill = document.getElementById('menuReminderPill');
+  const menuReminderKnob = document.getElementById('menuReminderKnob');
+  const toastStack = document.getElementById('toastStack');
+
+  let notifyEnabled = localStorage.getItem(NOTIFY_KEY) === '1';
+  updateBellUI();
+
+  function updateBellUI(){
+    menuReminderPill.classList.toggle('bg-[#3A67D8]', notifyEnabled);
+    menuReminderPill.classList.toggle('bg-[#D7DBE1]', !notifyEnabled);
+    menuReminderKnob.style.transform = notifyEnabled ? 'translateX(16px)' : 'translateX(0)';
+  }
+
+  menuReminderToggle.addEventListener('click', async ()=>{
+    if(!notifyEnabled){
+      if('Notification' in window && Notification.permission !== 'granted'){
+        const perm = await Notification.requestPermission();
+        if(perm !== 'granted'){
+          showToast('Reminders will still ping in-tab, but browser alerts need permission.');
+        }
+      }
+      notifyEnabled = true;
+      localStorage.setItem(NOTIFY_KEY, '1');
+      showToast('Pings are on — you\'ll get notified when a task ends.');
+    } else {
+      notifyEnabled = false;
+      localStorage.setItem(NOTIFY_KEY, '0');
+      showToast('Pings turned off.');
+    }
+    updateBellUI();
+  });
+
+  function getNotified(){
+    try{ return JSON.parse(localStorage.getItem(NOTIFIED_KEY)) || {}; }
+    catch(e){ return {}; }
+  }
+  function markNotified(id){
+    const n = getNotified();
+    n[id] = todayISO();
+    localStorage.setItem(NOTIFIED_KEY, JSON.stringify(n));
+  }
+  function alreadyNotifiedToday(id){
+    const n = getNotified();
+    return n[id] === todayISO();
+  }
+
+  const CLOCK_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>';
+
+  function showToast(msg, withClock){
+    const el = document.createElement('div');
+    el.className = 'bg-[#1E2126] dark:bg-[#26282D] text-white rounded-2xl px-4 py-3 text-[13.5px] font-semibold shadow-[0_12px_30px_-10px_rgba(0,0,0,.4)] flex items-center gap-2.5 animate-toastIn';
+    const icon = withClock ? CLOCK_SVG : '<span class="w-2 h-2 rounded-full bg-[#6EE7A8] shrink-0"></span>';
+    el.innerHTML = `${icon}<span>${escapeHtml(msg)}</span>`;
+    toastStack.appendChild(el);
+    setTimeout(()=>{
+      el.style.transition = 'opacity .3s ease';
+      el.style.opacity = '0';
+      setTimeout(()=> el.remove(), 320);
+    }, 5000);
+  }
+
+  function showUndoToast(msg, onUndo){
+    const el = document.createElement('div');
+    el.className = 'bg-[#1E2126] dark:bg-[#26282D] text-white rounded-2xl px-4 py-3 text-[13.5px] font-semibold shadow-[0_12px_30px_-10px_rgba(0,0,0,.4)] flex items-center gap-3 animate-toastIn';
+    el.innerHTML = `<span class="w-2 h-2 rounded-full bg-[#F0A45B] shrink-0"></span><span class="flex-1">${escapeHtml(msg)}</span><button class="text-[#8AB4FF] font-bold hover:underline shrink-0">Undo</button>`;
+    let done = false;
+    const finish = ()=>{
+      if(done) return;
+      done = true;
+      el.style.transition = 'opacity .3s ease';
+      el.style.opacity = '0';
+      setTimeout(()=> el.remove(), 320);
+    };
+    el.querySelector('button').addEventListener('click', ()=>{
+      if(done) return;
+      done = true;
+      clearTimeout(timer);
+      onUndo();
+      el.style.transition = 'opacity .2s ease';
+      el.style.opacity = '0';
+      setTimeout(()=> el.remove(), 220);
+    });
+    toastStack.appendChild(el);
+    const timer = setTimeout(finish, 5000);
+  }
+
+  function playPing(){
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [880, 1320].forEach((freq, i)=>{
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime + i*0.16);
+        gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + i*0.16 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + i*0.16 + 0.32);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(ctx.currentTime + i*0.16);
+        osc.stop(ctx.currentTime + i*0.16 + 0.34);
+      });
+    }catch(e){ /* audio not available, ignore */ }
+  }
+
+  function checkDueTasks(){
+    if(!notifyEnabled) return;
+    const now = new Date();
+    const nowHM = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    const today = todayISO();
+
+    tasks.forEach(t=>{
+      if(t.date !== today || !t.end) return;
+      if(t.end !== nowHM) return;
+      if(alreadyNotifiedToday(t.id)) return;
+
+      markNotified(t.id);
+      playPing();
+      showToast(`"${t.title}" just ended.`, true);
+
+      if('Notification' in window && Notification.permission === 'granted'){
+        try{
+          new Notification('Task ended', { body: `${t.title} (${fmtTime(t.start)} - ${fmtTime(t.end)})`, tag: t.id });
+        }catch(e){ /* ignore */ }
+      }
+    });
+  }
+
+  setInterval(checkDueTasks, 15000);
+  checkDueTasks();
+
+  // ---- Gemini API key (for paraphrasing notes) ----
+  const SPARKLE_SVG = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M4.2 12H8M16 12h3.8M6 6l2.5 2.5M17.5 15.5L20 18M18 6l-2.5 2.5M8.5 15.5L6 18"/><circle cx="12" cy="12" r="2.3"/></svg>';
+  const GEMINI_KEY_STORAGE = 'ticket_todo_gemini_key_v1';
+  const apiKeyBtn = document.getElementById('menuApiKeyBtn');
+  const apiKeyOverlay = document.getElementById('apiKeyOverlay');
+  const fApiKey = document.getElementById('fApiKey');
+  const apiKeyCancelBtn = document.getElementById('apiKeyCancelBtn');
+  const apiKeySaveBtn = document.getElementById('apiKeySaveBtn');
+
+  function openApiKeyModal(){
+    fApiKey.value = localStorage.getItem(GEMINI_KEY_STORAGE) || '';
+    apiKeyOverlay.classList.remove('hidden');
+    apiKeyOverlay.classList.add('flex');
+    setTimeout(()=> fApiKey.focus(), 50);
+  }
+  function closeApiKeyModal(){
+    apiKeyOverlay.classList.add('hidden');
+    apiKeyOverlay.classList.remove('flex');
+  }
+  apiKeyBtn.addEventListener('click', openApiKeyModal);
+  apiKeyCancelBtn.addEventListener('click', closeApiKeyModal);
+  apiKeyOverlay.addEventListener('click', (e)=>{ if(e.target === apiKeyOverlay) closeApiKeyModal(); });
+  apiKeySaveBtn.addEventListener('click', ()=>{
+    const key = fApiKey.value.trim();
+    if(key){
+      localStorage.setItem(GEMINI_KEY_STORAGE, key);
+      showToast('API key saved.');
+    } else {
+      localStorage.removeItem(GEMINI_KEY_STORAGE);
+      showToast('API key cleared.');
+    }
+    closeApiKeyModal();
+  });
+
+  async function callGeminiParaphrase(text){
+    const apiKey = localStorage.getItem(GEMINI_KEY_STORAGE);
+    if(!apiKey){
+      openApiKeyModal();
+      throw new Error('missing-key');
+    }
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `Paraphrase the following text. Keep the meaning and roughly the same length. Reply with ONLY the paraphrased text, no preamble, no quotes:\n\n${text}`
+          }]
+        }]
+      })
+    });
+    const data = await res.json();
+    const out = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if(!out){
+      throw new Error(data?.error?.message || 'Could not paraphrase — check your API key.');
+    }
+    return out;
+  }
+
+  async function paraphraseNote(note, bodyEl, btnEl){
+    const text = bodyEl.value.trim();
+    if(!localStorage.getItem(GEMINI_KEY_STORAGE)){
+      showToast('Add your Gemini API key first.');
+      openApiKeyModal();
+      return;
+    }
+    if(!text){
+      showToast('Write something in the note first.');
+      return;
+    }
+    const originalIcon = btnEl.innerHTML;
+    btnEl.disabled = true;
+    btnEl.classList.add('animate-spin');
+    try{
+      const out = await callGeminiParaphrase(text);
+      bodyEl.value = out;
+      note.body = out;
+      saveNotes();
+      showToast('Note paraphrased.');
+    } catch(e){
+      showToast(e.message === 'missing-key' ? 'Add your Gemini API key first.' : (e.message || 'Paraphrase failed.'));
+    } finally {
+      btnEl.disabled = false;
+      btnEl.classList.remove('animate-spin');
+      btnEl.innerHTML = originalIcon;
+    }
+  }
+
+  // ---- Standalone paraphraser box ----
+  const paraphraserCard = document.getElementById('paraphraserCard');
+  const paraToggleBtn = document.getElementById('menuParaBtn');
+  const paraInput = document.getElementById('paraInput');
+  const paraBtn = document.getElementById('paraBtn');
+  const paraBtnIcon = document.getElementById('paraBtnIcon');
+  const paraBtnLabel = document.getElementById('paraBtnLabel');
+  const paraOutputWrap = document.getElementById('paraOutputWrap');
+  const paraOutput = document.getElementById('paraOutput');
+  const paraCopyBtn = document.getElementById('paraCopyBtn');
+
+  paraBtnIcon.innerHTML = SPARKLE_SVG;
+
+  paraToggleBtn.addEventListener('click', ()=>{
+    paraphraserCard.classList.toggle('hidden');
+    const opening = !paraphraserCard.classList.contains('hidden');
+    closeProfileMenu();
+    if(opening) setTimeout(()=> paraInput.focus(), 200);
+  });
+
+  paraBtn.addEventListener('click', async ()=>{
+    const text = paraInput.value.trim();
+    if(!localStorage.getItem(GEMINI_KEY_STORAGE)){
+      showToast('Add your Gemini API key first.');
+      openApiKeyModal();
+      return;
+    }
+    if(!text){
+      showToast('Type or paste some text first.');
+      return;
+    }
+    paraBtn.disabled = true;
+    paraBtnIcon.classList.add('animate-spin');
+    paraBtnLabel.textContent = 'Paraphrasing...';
+    try{
+      const out = await callGeminiParaphrase(text);
+      paraOutput.value = out;
+      paraOutputWrap.classList.remove('hidden');
+    } catch(e){
+      showToast(e.message === 'missing-key' ? 'Add your Gemini API key first.' : (e.message || 'Paraphrase failed.'));
+    } finally {
+      paraBtn.disabled = false;
+      paraBtnIcon.classList.remove('animate-spin');
+      paraBtnLabel.textContent = 'Paraphrase';
+    }
+  });
+
+  paraCopyBtn.addEventListener('click', async ()=>{
+    if(!paraOutput.value) return;
+    try{
+      await navigator.clipboard.writeText(paraOutput.value);
+      showToast('Copied to clipboard.');
+    }catch(e){
+      showToast('Could not copy — select the text manually.');
+    }
+  });
+
+  // ---- Freeform sticky notes ----
+  const NOTES_KEY = 'ticket_todo_notes_v1';
+  const notesLayer = document.getElementById('notesLayer');
+  const addNoteBtn = document.getElementById('openAddNote');
+
+  const NOTE_THEMES = [
+    { key:'olive',  cardBg:'bg-[#EEF1DA]', ac:'text-[#7C8A3C]', tape:'text-[#9AA65A]' },
+    { key:'pink',   cardBg:'bg-[#FBE4EC]', ac:'text-[#C23574]', tape:'text-[#E0568F]' },
+    { key:'teal',   cardBg:'bg-[#DFF1F5]', ac:'text-[#2F8FA6]', tape:'text-[#5FB8C9]' },
+    { key:'amber',  cardBg:'bg-[#FCF1DF]', ac:'text-[#D9932A]', tape:'text-[#E8B45A]' },
+    { key:'violet', cardBg:'bg-[#EFEAFB]', ac:'text-[#7B57D6]', tape:'text-[#A98CE8]' }
+  ];
+
+  const TRASH_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+  const ROTATE_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3.3-6.98"/><path d="M21 3v6h-6"/></svg>';
+  const TAPE_SVG = `<svg width="42" height="82" viewBox="0 0 42 82" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,7 L6,1 L12,6 L18,0 L24,5 L30,-1 L36,4 L42,6 L42,74 L36,80 L30,73 L24,79 L18,72 L12,78 L6,71 L0,76 Z" fill="currentColor"/>
+  </svg>`;
+
+  let notes = loadNotes();
+  let activeNoteForPaste = null;
+
+  // Document-level fallback: catches paste even if focus landed on title/subject
+  // or if a browser fires paste on document instead of the field itself.
+  document.addEventListener('paste', (e)=>{
+    if(!activeNoteForPaste) return;
+    const items = e.clipboardData && e.clipboardData.items;
+    if(!items) return;
+    for(const item of items){
+      if(item.type && item.type.startsWith('image/')){
+        e.preventDefault();
+        const file = item.getAsFile();
+        if(file) compressImageFile(file, activeNoteForPaste.setNoteImage);
+        break;
+      }
+    }
+  });
+
+  function loadNotes(){
+    try{
+      const raw = localStorage.getItem(NOTES_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return parsed.map(n => ({ image: null, ...n }));
+    }catch(e){ return []; }
+  }
+  function saveNotes(){
+    localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+  }
+  function noteUid(){
+    return 'n_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8);
+  }
+
+  // Downscale + re-encode pasted/uploaded images so they don't blow up localStorage quota.
+  function compressImageFile(file, callback){
+    if(!file.type || !file.type.startsWith('image/')){
+      showToast('That file isn\'t an image.');
+      return;
+    }
+    if(file.size > 12 * 1024 * 1024){
+      showToast('Image is too large — try one under 12MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const MAX_W = 480;
+        const scale = Math.min(1, MAX_W / img.width);
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        try{
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          callback(dataUrl);
+        }catch(e){
+          showToast('Could not process that image.');
+        }
+      };
+      img.onerror = ()=> showToast('Could not read that image.');
+      img.src = reader.result;
+    };
+    reader.onerror = ()=> showToast('Could not read that image.');
+    reader.readAsDataURL(file);
+  }
+
+  function renderNotes(){
+    notesLayer.innerHTML = '';
+    notes.forEach((note, i)=>{
+      const theme = NOTE_THEMES.find(t=>t.key===note.theme) || NOTE_THEMES[0];
+      const el = document.createElement('div');
+      el.className = 'sticky-note absolute w-[224px] pointer-events-auto cursor-grab touch-none select-none group';
+      el.style.left = note.x + 'px';
+      el.style.top = note.y + 'px';
+      el.style.setProperty('--rot', note.rot + 'deg');
+      el.style.setProperty('--tape-rot', note.tapeRot + 'deg');
+
+      el.innerHTML = `
+        <div class="absolute -top-[30px] left-1/2 pointer-events-none mix-blend-multiply ${theme.tape} [transform:translateX(-50%)_rotate(var(--tape-rot))]">${TAPE_SVG}</div>
+        <div class="note-card relative rounded-[20px] px-[18px] pt-[22px] pb-[18px] shadow-[0_14px_30px_-16px_rgba(20,22,26,.35),0_2px_8px_rgba(20,22,26,.08)] transition-transform duration-[180ms] group-hover:shadow-[0_20px_40px_-16px_rgba(20,22,26,.42)] ${theme.cardBg} [transform:rotate(var(--rot))]">
+          <button class="note-del absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-white/55 flex items-center justify-center cursor-pointer opacity-0 scale-75 transition-all duration-150 group-hover:opacity-100 group-hover:scale-100 hover:bg-white text-[#1E2126]/55 hover:text-[#C13535]" title="Delete note">${TRASH_SVG}</button>
+          <button class="note-paraphrase absolute top-2.5 right-9 w-6 h-6 rounded-full bg-white/55 flex items-center justify-center cursor-pointer opacity-0 scale-75 transition-all duration-150 group-hover:opacity-100 group-hover:scale-100 hover:bg-white text-[#1E2126]/55 hover:text-[#3A67D8]" title="Paraphrase with Gemini">${SPARKLE_SVG}</button>
+          <button class="note-image-btn absolute top-2.5 right-[60px] w-6 h-6 rounded-full bg-white/55 flex items-center justify-center cursor-pointer opacity-0 scale-75 transition-all duration-150 group-hover:opacity-100 group-hover:scale-100 hover:bg-white text-[#1E2126]/55 hover:text-[#3A67D8]" title="Add image">${IMAGE_SVG}</button>
+          <input type="file" class="n-image-input hidden" accept="image/*">
+          <div class="flex items-center gap-2 mb-2">
+            <p class="font-mono font-bold text-[13px] ${theme.ac}">{${i + 1}}</p>
+            <input type="text" class="n-subject font-mono text-[10px] font-bold uppercase tracking-[.06em] px-2 py-[3px] rounded-full outline-none w-auto max-w-[120px] truncate transition-colors duration-150 ${note.subject ? subjectPillClasses(note.subject) : 'bg-white/40 text-[#1E2126]/40 placeholder:text-[#1E2126]/40'}" placeholder="subject" value="${escapeHtml(note.subject || '')}" list="subjectList">
+          </div>
+          <input type="text" class="n-title bg-transparent outline-none font-bold text-[15px] leading-[1.3] mb-2 w-full text-[#1E2126] placeholder:text-[#1E2126]/35" placeholder="Note title" value="${escapeHtml(note.title)}">
+          <div class="n-image-wrap ${note.image ? '' : 'hidden'} relative mb-2 rounded-[12px] overflow-hidden border border-black/10">
+            <img class="n-image-thumb block w-full max-h-[160px] object-cover" src="${note.image || ''}" alt="">
+            <button class="n-image-remove absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/55 flex items-center justify-center text-white hover:bg-black/75" title="Remove image">
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <textarea class="n-body bg-transparent outline-none text-[12.5px] leading-[1.5] text-[#1E2126]/70 w-full resize-none placeholder:text-[#1E2126]/35" rows="3" placeholder="Write something... (paste an image here too)">${escapeHtml(note.body)}</textarea>
+          <button class="note-rotate absolute -bottom-3 -right-3 w-7 h-7 rounded-full bg-white border-[1.5px] border-[#D7DBE1] text-[#8A8F98] flex items-center justify-center cursor-grab opacity-0 scale-75 transition-all duration-150 group-hover:opacity-100 group-hover:scale-100 hover:text-[#1E2126] hover:border-[#B7BBC2]" title="Drag to tilt">${ROTATE_SVG}</button>
+        </div>
+      `;
+
+      const cardEl = el.querySelector('.note-card');
+      const titleEl = el.querySelector('.n-title');
+      const subjectEl = el.querySelector('.n-subject');
+      subjectEl.addEventListener('input', ()=>{ note.subject = subjectEl.value; saveNotes(); });
+      subjectEl.addEventListener('blur', ()=>{ note.subject = normalizeSubject(subjectEl.value); saveNotes(); renderNotes(); });
+      const bodyEl = el.querySelector('.n-body');
+      titleEl.addEventListener('input', ()=>{ note.title = titleEl.value; saveNotes(); });
+      bodyEl.addEventListener('input', ()=>{ note.body = bodyEl.value; saveNotes(); });
+
+      el.querySelector('.note-del').addEventListener('click', (e)=>{
+        e.stopPropagation();
+        notes = notes.filter(n=>n.id !== note.id);
+        saveNotes();
+        renderNotes();
+      });
+
+      el.querySelector('.note-paraphrase').addEventListener('click', (e)=>{
+        e.stopPropagation();
+        paraphraseNote(note, bodyEl, e.currentTarget);
+      });
+
+      el.querySelector('.note-rotate').addEventListener('pointerdown', (e)=>{
+        e.stopPropagation();
+        startRotate(e, note, el, cardEl);
+      });
+
+      // ---- Image support: paste, file picker, remove ----
+      const imageWrap = el.querySelector('.n-image-wrap');
+      const imageThumb = el.querySelector('.n-image-thumb');
+      const imageBtn = el.querySelector('.note-image-btn');
+      const imageInput = el.querySelector('.n-image-input');
+      const imageRemoveBtn = el.querySelector('.n-image-remove');
+
+      function setNoteImage(dataUrl){
+        note.image = dataUrl;
+        saveNotes();
+        imageThumb.src = dataUrl;
+        imageWrap.classList.remove('hidden');
+        showToast('Image added to note.');
+      }
+
+      imageBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        imageInput.click();
+      });
+      imageInput.addEventListener('click', (e)=> e.stopPropagation());
+      imageInput.addEventListener('change', ()=>{
+        const file = imageInput.files[0];
+        if(file) compressImageFile(file, setNoteImage);
+        imageInput.value = '';
+      });
+      imageRemoveBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        note.image = null;
+        saveNotes();
+        imageWrap.classList.add('hidden');
+        imageThumb.src = '';
+      });
+      // Paste an image directly into the note (focus the textarea, then Ctrl+V)
+      // Paste an image anywhere in this note (title, subject, or body — not just the body textarea)
+      cardEl.addEventListener('focusin', ()=>{ activeNoteForPaste = { note, setNoteImage }; });
+      bodyEl.addEventListener('paste', (e)=>{
+        const items = e.clipboardData && e.clipboardData.items;
+        if(!items) return;
+        for(const item of items){
+          if(item.type && item.type.startsWith('image/')){
+            e.preventDefault();
+            const file = item.getAsFile();
+            if(file) compressImageFile(file, setNoteImage);
+            break;
+          }
+        }
+      });
+
+      el.addEventListener('pointerdown', (e)=> startDrag(e, note, el));
+
+      notesLayer.appendChild(el);
+    });
+  }
+
+  function startRotate(e, note, el, cardEl){
+    e.preventDefault();
+    const handle = e.currentTarget;
+    handle.setPointerCapture(e.pointerId);
+    el.classList.add('cursor-grabbing');
+    cardEl.classList.add('transition-none');
+    const rect = cardEl.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const startAngle = Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI;
+    const startRot = parseFloat(note.rot);
+    let liveRot = startRot;
+
+    function move(ev){
+      const angle = Math.atan2(ev.clientY - cy, ev.clientX - cx) * 180 / Math.PI;
+      liveRot = startRot + (angle - startAngle);
+      el.style.setProperty('--rot', liveRot + 'deg');
+    }
+    function up(){
+      el.classList.remove('cursor-grabbing');
+      cardEl.classList.remove('transition-none');
+      handle.removeEventListener('pointermove', move);
+      handle.removeEventListener('pointerup', up);
+      note.rot = Number(liveRot.toFixed(1));
+      saveNotes();
+    }
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', up);
+  }
+
+  function startDrag(e, note, el){
+    if(e.target.closest('.note-del')) return;
+    if(e.target.closest('.note-rotate')) return;
+    if(e.target.closest('.note-paraphrase')) return;
+    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    e.preventDefault();
+    el.setPointerCapture(e.pointerId);
+    el.classList.add('cursor-grabbing', 'z-[999]');
+    el.querySelector('.note-card').classList.add('transition-none');
+    const startRect = el.getBoundingClientRect();
+    const offsetX = e.clientX - startRect.left;
+    const offsetY = e.clientY - startRect.top;
+    const pageOffsetX = window.scrollX;
+    const pageOffsetY = window.scrollY;
+
+    function move(ev){
+      let nx = ev.clientX - offsetX + (window.scrollX - pageOffsetX);
+      let ny = ev.clientY - offsetY + (window.scrollY - pageOffsetY);
+      nx = Math.max(0, Math.min(document.documentElement.scrollWidth - startRect.width, nx));
+      ny = Math.max(0, Math.min(document.documentElement.scrollHeight - startRect.height, ny));
+      el.style.left = nx + 'px';
+      el.style.top = ny + 'px';
+    }
+    function up(){
+      el.classList.remove('cursor-grabbing', 'z-[999]');
+      el.querySelector('.note-card').classList.remove('transition-none');
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', up);
+      note.x = parseFloat(el.style.left);
+      note.y = parseFloat(el.style.top);
+      saveNotes();
+    }
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', up);
+  }
+
+  addNoteBtn.addEventListener('click', ()=>{
+    const theme = NOTE_THEMES[notes.length % NOTE_THEMES.length];
+    const jitter = () => Math.floor(Math.random() * 40) - 20;
+    const note = {
+      id: noteUid(),
+      x: Math.max(20, window.innerWidth / 2 - 112 + jitter()),
+      y: window.scrollY + 120 + jitter(),
+      title: '',
+      subject: '',
+      body: '',
+      image: null,
+      theme: theme.key,
+      rot: (Math.random() * 5 - 2.5).toFixed(1),
+      tapeRot: (Math.random() > 0.5 ? -1 : 1) * (6 + Math.random() * 6).toFixed(1)
+    };
+    notes.push(note);
+    saveNotes();
+    renderNotes();
+  });
+
+  // ---- Import / Export ----
+  const exportDataBtn = document.getElementById('menuExportBtn');
+  const importDataBtn = document.getElementById('menuImportBtn');
+  const importFileInput = document.getElementById('importFileInput');
+
+  exportDataBtn.addEventListener('click', ()=>{
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      userName,
+      tasks,
+      notes
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ticket-todo-backup-${todayISO()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('Data exported.');
+  });
+
+  importDataBtn.addEventListener('click', ()=> importFileInput.click());
+
+  importFileInput.addEventListener('change', ()=>{
+    const file = importFileInput.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const parsed = JSON.parse(reader.result);
+        if(!Array.isArray(parsed.tasks) || !Array.isArray(parsed.notes)){
+          throw new Error('bad-shape');
+        }
+        tasks = parsed.tasks.map(t => ({ done: false, ...t }));
+        notes = parsed.notes;
+        if(parsed.userName){
+          localStorage.setItem(USER_NAME_KEY, parsed.userName);
+          applyUserName(parsed.userName);
+        }
+        saveTasks();
+        saveNotes();
+        render();
+        renderNotes();
+        showToast('Data imported.');
+      }catch(e){
+        showToast('Could not read that file — is it a valid export?');
+      }
+    };
+    reader.readAsText(file);
+    importFileInput.value = '';
+  });
+
+  // ---- Idle nudge animation ----
+  const IDLE_DELAY = 5000;
+  let idleTimer = null;
+  const idleTargets = [document.getElementById('openAdd'), document.getElementById('openAddNote')];
+
+  function startIdleAnimation(){
+    idleTargets.forEach(el => el.classList.add('idle-active'));
+  }
+  function stopIdleAnimation(){
+    idleTargets.forEach(el => el.classList.remove('idle-active'));
+  }
+  function resetIdleTimer(){
+    stopIdleAnimation();
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(startIdleAnimation, IDLE_DELAY);
+  }
+  ['mousemove','mousedown','keydown','touchstart','scroll','wheel'].forEach(evt=>{
+    document.addEventListener(evt, resetIdleTimer, { passive: true });
+  });
+  resetIdleTimer();
+
+  function setSidebarDate(){
+    const el = document.getElementById('sidebarDate');
+    if(!el) return;
+    const now = new Date();
+    const weekday = now.toLocaleDateString('en-US', {weekday:'short'}).toUpperCase();
+    const month = now.toLocaleDateString('en-US', {month:'short'}).toUpperCase();
+    el.textContent = `${weekday} · ${month} ${String(now.getDate()).padStart(2,'0')}`;
+  }
+  setSidebarDate();
+
+  // ================= NEW FEATURE: Class schedule → auto task generator =================
+  const CLASS_SCHEDULE_KEY = 'ticket_todo_class_schedule_v1';
+  const SCHEDULE_GENERATED_KEY = 'ticket_todo_schedule_generated_v1'; // tracks "scheduleId|dateISO" already generated
+
+  const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  let classSchedule = loadClassSchedule();
+
+  function loadClassSchedule(){
+    try{
+      const raw = localStorage.getItem(CLASS_SCHEDULE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveClassSchedule(){
+    localStorage.setItem(CLASS_SCHEDULE_KEY, JSON.stringify(classSchedule));
+  }
+  function classUid(){
+    return 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6);
+  }
+
+  function getGeneratedSet(){
+    try{ return new Set(JSON.parse(localStorage.getItem(SCHEDULE_GENERATED_KEY)) || []); }
+    catch(e){ return new Set(); }
+  }
+  function saveGeneratedSet(set){
+    localStorage.setItem(SCHEDULE_GENERATED_KEY, JSON.stringify([...set]));
+  }
+
+  const scheduleOverlay = document.getElementById('scheduleOverlay');
+  const scheduleList = document.getElementById('scheduleList');
+  const menuScheduleBtn = document.getElementById('menuScheduleBtn');
+  const scheduleCloseBtn = document.getElementById('scheduleCloseBtn');
+  const scheduleAddRowBtn = document.getElementById('scheduleAddRowBtn');
+  const scheduleGenerateBtn = document.getElementById('scheduleGenerateBtn');
+
+  function openScheduleModal(){
+    closeProfileMenu();
+    renderScheduleList();
+    scheduleOverlay.classList.remove('hidden');
+    scheduleOverlay.classList.add('flex');
+  }
+  function closeScheduleModal(){
+    scheduleOverlay.classList.add('hidden');
+    scheduleOverlay.classList.remove('flex');
+  }
+  menuScheduleBtn.addEventListener('click', openScheduleModal);
+  scheduleCloseBtn.addEventListener('click', closeScheduleModal);
+  scheduleOverlay.addEventListener('click', (e)=>{ if(e.target === scheduleOverlay) closeScheduleModal(); });
+
+  function renderScheduleList(){
+    if(classSchedule.length === 0){
+      scheduleList.innerHTML = `<p class="text-[12.5px] text-[#B7BBC2] dark:text-[#5B5F68] text-center py-3">No classes added yet.</p>`;
+      return;
+    }
+    scheduleList.innerHTML = classSchedule.map(c => `
+      <div class="border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl p-3" data-row="${c.id}">
+        <div class="flex gap-2 mb-2">
+          <input type="text" class="c-subject flex-1 min-w-0 border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-lg px-2.5 py-2 text-[13px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none focus:border-[#1E2126] dark:focus:border-[#E7E9EC]" placeholder="Subject e.g. Networking" maxlength="30" value="${escapeHtml(c.subject || '')}">
+          <button class="c-del w-8 h-8 rounded-lg bg-[#FCEAE7] dark:bg-[#2A1E1E] text-[#C13535] flex items-center justify-center shrink-0 hover:opacity-80" title="Remove">${TRASH_BIG_SVG}</button>
+        </div>
+        <div class="flex flex-wrap gap-1 mb-2">
+          ${DAY_LABELS.map((d,i)=>`<button type="button" data-day="${i}" class="c-day font-mono text-[10.5px] font-bold w-7 h-7 rounded-full border-[1.5px] transition-colors ${c.days && c.days.includes(i) ? 'bg-[#1E2126] dark:bg-[#E7E9EC] border-[#1E2126] dark:border-[#E7E9EC] text-white dark:text-[#15171B]' : 'bg-transparent border-[#D7DBE1] dark:border-[#33363D] text-[#8A8F98] dark:text-[#9AA3AE]'}">${d[0]}</button>`).join('')}
+        </div>
+        <div class="flex gap-2">
+          <input type="time" class="c-start flex-1 border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-lg px-2.5 py-2 text-[13px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none focus:border-[#1E2126] dark:focus:border-[#E7E9EC]" value="${c.start || ''}">
+          <input type="time" class="c-end flex-1 border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-lg px-2.5 py-2 text-[13px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-[#FAFBFC] dark:bg-[#121417] outline-none focus:border-[#1E2126] dark:focus:border-[#E7E9EC]" value="${c.end || ''}">
+        </div>
+      </div>
+    `).join('');
+
+    scheduleList.querySelectorAll('[data-row]').forEach(row=>{
+      const id = row.dataset.row;
+      const c = classSchedule.find(x=>x.id===id);
+      if(!c) return;
+      row.querySelector('.c-subject').addEventListener('input', (e)=>{ c.subject = e.target.value; saveClassSchedule(); });
+      row.querySelector('.c-start').addEventListener('change', (e)=>{ c.start = e.target.value; saveClassSchedule(); });
+      row.querySelector('.c-end').addEventListener('change', (e)=>{ c.end = e.target.value; saveClassSchedule(); });
+      row.querySelector('.c-del').addEventListener('click', ()=>{
+        classSchedule = classSchedule.filter(x=>x.id!==id);
+        saveClassSchedule();
+        renderScheduleList();
+      });
+      row.querySelectorAll('.c-day').forEach(dayBtn=>{
+        dayBtn.addEventListener('click', ()=>{
+          const day = Number(dayBtn.dataset.day);
+          c.days = c.days || [];
+          if(c.days.includes(day)) c.days = c.days.filter(d=>d!==day);
+          else c.days.push(day);
+          saveClassSchedule();
+          renderScheduleList();
+        });
+      });
+    });
+  }
+
+  scheduleAddRowBtn.addEventListener('click', ()=>{
+    classSchedule.push({ id: classUid(), subject: '', days: [], start: '08:00', end: '09:30' });
+    saveClassSchedule();
+    renderScheduleList();
+  });
+
+  function isoDateFromCursor(cursor){
+    return cursor.getFullYear() + '-' + String(cursor.getMonth()+1).padStart(2,'0') + '-' + String(cursor.getDate()).padStart(2,'0');
+  }
+
+  scheduleGenerateBtn.addEventListener('click', ()=>{
+    const valid = classSchedule.filter(c => c.subject.trim() && c.days && c.days.length && c.start && c.end);
+    if(valid.length === 0){
+      showToast('Add at least one class with a subject, day, and time.');
+      return;
+    }
+    const generated = getGeneratedSet();
+    let added = 0;
+    const cursor = new Date();
+    // Generate for the next 7 days (today through +6), so "this week" works regardless of what day it is.
+    for(let i=0; i<7; i++){
+      const d = new Date();
+      d.setDate(cursor.getDate() + i);
+      const dow = d.getDay();
+      const iso = isoDateFromCursor(d);
+      valid.forEach(c=>{
+        if(!c.days.includes(dow)) return;
+        const genKey = `${c.id}|${iso}`;
+        if(generated.has(genKey)) return;
+        tasks.push({
+          id: uid(),
+          done: false,
+          title: c.subject.trim(),
+          subject: c.subject.trim(),
+          date: iso,
+          start: c.start,
+          end: c.end,
+          description: '',
+          color: subjectColorKey(c.subject.trim()),
+          fromSchedule: true
+        });
+        generated.add(genKey);
+        added++;
+      });
+    }
+    saveGeneratedSet(generated);
+    saveTasks();
+    render();
+    closeScheduleModal();
+    showToast(added > 0 ? `Added ${added} class ticket${added===1?'':'s'} for this week.` : 'Already generated for this week — no new tickets.');
+  });
+
+  // ================= NEW FEATURE: Study buddy share link =================
+  const shareOverlay = document.getElementById('shareOverlay');
+  const menuShareBtn = document.getElementById('menuShareBtn');
+  const shareCloseBtn = document.getElementById('shareCloseBtn');
+  const shareLinkOutput = document.getElementById('shareLinkOutput');
+  const shareCopyBtn = document.getElementById('shareCopyBtn');
+
+  function buildShareSnapshot(){
+    return {
+      n: userName || 'A friend',
+      s: computeStreak(),
+      o: tasks.filter(t=>!t.done).length,
+      t: Date.now()
+    };
+  }
+  function encodeSnapshot(obj){
+    try{
+      return btoa(encodeURIComponent(JSON.stringify(obj)));
+    }catch(e){ return ''; }
+  }
+  function decodeSnapshot(str){
+    try{
+      return JSON.parse(decodeURIComponent(atob(str)));
+    }catch(e){ return null; }
+  }
+
+  function openShareModal(){
+    closeProfileMenu();
+    const encoded = encodeSnapshot(buildShareSnapshot());
+    const url = `${location.origin}${location.pathname}#buddy=${encoded}`;
+    shareLinkOutput.value = url;
+    shareOverlay.classList.remove('hidden');
+    shareOverlay.classList.add('flex');
+  }
+  function closeShareModal(){
+    shareOverlay.classList.add('hidden');
+    shareOverlay.classList.remove('flex');
+  }
+  menuShareBtn.addEventListener('click', openShareModal);
+  shareCloseBtn.addEventListener('click', closeShareModal);
+  shareOverlay.addEventListener('click', (e)=>{ if(e.target === shareOverlay) closeShareModal(); });
+  shareCopyBtn.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(shareLinkOutput.value);
+      showToast('Link copied — send it to your study buddy.');
+    }catch(e){
+      shareLinkOutput.select();
+      showToast('Could not auto-copy — text is selected, copy manually.');
+    }
+  });
+
+  // If this page was opened via a study-buddy link, show the compare screen instead of booting the app normally.
+  function checkIncomingBuddyLink(){
+    const hash = location.hash || '';
+    const match = hash.match(/buddy=([^&]+)/);
+    if(!match) return false;
+    const snap = decodeSnapshot(match[1]);
+    if(!snap) return false;
+
+    const compareOverlay = document.getElementById('compareOverlay');
+    document.getElementById('compareYouLabel').textContent = userName || 'You';
+    document.getElementById('compareYouStreak').textContent = computeStreak();
+    const myOpen = tasks.filter(t=>!t.done).length;
+    document.getElementById('compareYouTasks').textContent = `${myOpen} open task${myOpen===1?'':'s'}`;
+
+    document.getElementById('compareThemLabel').textContent = snap.n || 'Buddy';
+    document.getElementById('compareThemStreak').textContent = snap.s || 0;
+    document.getElementById('compareThemTasks').textContent = `${snap.o || 0} open task${(snap.o||0)===1?'':'s'}`;
+
+    const msgEl = document.getElementById('compareMsg');
+    const myStreak = computeStreak();
+    if(myStreak > (snap.s||0)) msgEl.textContent = "You're ahead — keep the streak going!";
+    else if(myStreak < (snap.s||0)) msgEl.textContent = `${snap.n || 'Your buddy'} is ahead — catch up today!`;
+    else msgEl.textContent = "You're tied — first to slip loses bragging rights.";
+
+    compareOverlay.classList.remove('hidden');
+    compareOverlay.classList.add('flex');
+
+    document.getElementById('compareEnterBtn').addEventListener('click', ()=>{
+      history.replaceState(null, '', location.pathname + location.search);
+      compareOverlay.classList.add('hidden');
+      compareOverlay.classList.remove('flex');
+    });
+    return true;
+  }
+
+  refreshSwatchSelection();
+  renderNotes();
+  render();
+  checkIncomingBuddyLink();
+
+  // ---- Boot: ask for name first-run, otherwise greet normally ----
+  if(userName){
+    applyUserName(userName);
+    showGreeting();
+  } else {
+    openNamePrompt();
+  }
+
+  // ---- PWA: register service worker + install prompt ----
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('sw.js').catch(()=>{ /* ignore in unsupported contexts */ });
+    });
+  }
+
+  let deferredInstallPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    showToast('Tip: open the menu to install this as an app.');
+  });
+
+  const menuInstallBtn = document.getElementById('menuInstallBtn');
+  if(menuInstallBtn){
+    menuInstallBtn.addEventListener('click', async ()=>{
+      if(!deferredInstallPrompt){
+        showToast('Already installed, or your browser doesn\'t support this yet.');
+        return;
+      }
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      if(outcome === 'accepted'){
+        showToast('Installed! Check your home screen.');
+      }
+      deferredInstallPrompt = null;
+    });
+  }
+
+  window.addEventListener('appinstalled', ()=>{
+    showToast('Ticket To-Do installed.');
+  });
+</script>
+
+</body>
+</html>
