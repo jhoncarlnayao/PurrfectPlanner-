@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>PurrfectPlanner </title>
 
-<!-- PWA: manifest + icons + theming -->
+
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1E2126">
 <link rel="icon" href="iconn.png">
@@ -253,6 +253,15 @@
 <div id="dayHoverTip" class="hidden fixed z-[95] pointer-events-none max-w-[220px] bg-[#1E2126] dark:bg-[#26282D] text-white rounded-xl px-3 py-2.5 shadow-[0_12px_30px_-10px_rgba(0,0,0,.45)] text-[12px] leading-snug"></div>
 
   <div class="app w-full max-w-[460px]">
+  <div id="searchBarWrap" class="relative mb-3">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 top-1/2 -translate-y-1/2 text-[#B7BBC2] dark:text-[#5B5F68] pointer-events-none"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input type="text" id="searchInput" placeholder="Search tasks..."
+      class="w-full border-[1.5px] border-[#D7DBE1] dark:border-[#33363D] rounded-[16px] pl-[38px] pr-[74px] py-[11px] text-[13.5px] font-sans text-[#1E2126] dark:text-[#E7E9EC] bg-white dark:bg-[#1E2126] outline-none transition-colors duration-150 focus:border-[#1E2126] dark:focus:border-[#E7E9EC] placeholder:text-[#B7BBC2] dark:placeholder:text-[#5B5F68]">
+    <button id="searchClearBtn" title="Clear search" class="hidden absolute right-[46px] top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#8A8F98] dark:text-[#9AA3AE] hover:text-[#1E2126] dark:hover:text-white">
+      <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+    </button>
+    <span class="absolute right-3.5 top-1/2 -translate-y-1/2 font-mono text-[10px] font-bold text-[#B7BBC2] dark:text-[#5B5F68] border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-md px-[6px] py-[2px] pointer-events-none select-none">/</span>
+  </div>
   <div id="subjectFilters" class="hidden gap-2 flex-wrap mb-1"></div>
   <div id="tickets" class="flex flex-col gap-[30px]"></div>
 
@@ -459,6 +468,66 @@
       Generate this week's tickets
     </button>
     <p class="text-[11.5px] text-[#B7BBC2] dark:text-[#5B5F68] mt-2 text-center leading-relaxed">Won't duplicate tickets already made from this schedule.</p>
+
+<div class="border-t-[1.5px] border-dashed border-[#D7DBE1] dark:border-[#33363D] mt-5 pt-4">
+      <h3 class="text-[13.5px] font-extrabold tracking-[-0.01em] mb-1 flex items-center gap-1.5">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#3A67D8]"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        Save schedule as image
+      </h3>
+      <p class="text-[11.5px] text-[#8A8F98] dark:text-[#9AA3AE] mb-3 leading-relaxed">Exports a calendar image of your classes with times — pick a look, then preview before saving.</p>
+
+      <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1.5">Design</label>
+      <div id="scheduleStylePicker" class="grid grid-cols-2 gap-2.5 mb-4">
+        <button type="button" data-style="classic" class="schedule-style-btn text-left border-2 rounded-xl p-2.5 transition-colors border-[#1E2126] dark:border-[#E7E9EC]">
+          <div class="rounded-lg bg-[#F5F6F8] dark:bg-[#121417] p-1.5 mb-2">
+            <svg viewBox="0 0 100 70" width="100%" height="auto">
+              <rect x="2" y="2" width="96" height="66" rx="6" fill="#EDEFF2"/>
+              <rect x="8" y="10" width="84" height="52" rx="4" fill="#fff" stroke="#D7DBE1" stroke-width="1"/>
+              <line x1="8" y1="24" x2="92" y2="24" stroke="#E4E6EA" stroke-width="1"/>
+              <rect x="14" y="30" width="24" height="7" rx="3" fill="#E7EFFD"/>
+              <rect x="14" y="39" width="20" height="7" rx="3" fill="#FCF1DF"/>
+              <rect x="50" y="30" width="24" height="7" rx="3" fill="#FAE6EF"/>
+            </svg>
+          </div>
+          <p class="text-[12px] font-bold">Classic grid</p>
+          <p class="text-[10.5px] text-[#8A8F98] dark:text-[#9AA3AE]">Compact chips with time, month calendar</p>
+        </button>
+        <button type="button" data-style="bold" class="schedule-style-btn text-left border-2 rounded-xl p-2.5 transition-colors border-transparent">
+          <div class="rounded-lg bg-[#F5F6F8] dark:bg-[#121417] p-1.5 mb-2">
+            <svg viewBox="0 0 100 70" width="100%" height="auto">
+              <rect x="2" y="2" width="96" height="66" rx="6" fill="#1E2126"/>
+              <rect x="8" y="10" width="84" height="52" rx="4" fill="#26282D"/>
+              <rect x="14" y="16" width="8" height="40" rx="2" fill="#3A67D8"/>
+              <rect x="24" y="18" width="60" height="10" rx="3" fill="#33363D"/>
+              <rect x="24" y="32" width="40" height="10" rx="3" fill="#33363D"/>
+              <rect x="24" y="46" width="50" height="10" rx="3" fill="#33363D"/>
+            </svg>
+          </div>
+          <p class="text-[12px] font-bold">Bold cards</p>
+          <p class="text-[10.5px] text-[#8A8F98] dark:text-[#9AA3AE]">Dark theme, big blocks with time</p>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2 mb-3">
+        <label class="text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] shrink-0">Months</label>
+        <div id="scheduleMonthStepper" class="flex items-center gap-2 ml-auto">
+          <button id="scheduleMonthMinus" type="button" class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] hover:bg-[#E7E8EB] dark:hover:bg-[#303339] font-bold text-[15px]">-</button>
+          <span id="scheduleMonthCount" class="font-mono text-[14px] font-bold w-5 text-center">1</span>
+          <button id="scheduleMonthPlus" type="button" class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] hover:bg-[#E7E8EB] dark:hover:bg-[#303339] font-bold text-[15px]">+</button>
+        </div>
+      </div>
+
+      <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1.5">Preview</label>
+      <div id="scheduleThumbWrap" class="relative rounded-[16px] overflow-hidden border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] mb-4 bg-[#F5F6F8] dark:bg-[#121417] flex items-center justify-center min-h-[140px]">
+        <img id="scheduleThumbImg" class="hidden w-full h-auto block" alt="Schedule preview">
+        <p id="scheduleThumbEmpty" class="text-[12px] text-[#B7BBC2] dark:text-[#5B5F68] py-8">Add a class to see a preview.</p>
+      </div>
+
+      <button id="scheduleSaveImageBtn" class="w-full border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#F1F2F4] dark:bg-[#26282D] text-[#1E2126] dark:text-[#E7E9EC] hover:bg-[#E7E8EB] dark:hover:bg-[#303339] flex items-center justify-center gap-2">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+        Download as PNG
+      </button>
+    </div>
   </div>
 </div>
 
@@ -858,6 +927,7 @@
   }
 
   let activeSubjectFilter = null;
+  let searchQuery = '';
 
   let tasks = loadTasks();
   let editingId = null;
@@ -1119,14 +1189,23 @@
     renderMiniCalWeek();
 
     if(tasks.length === 0){
-      wrap.innerHTML = `<p class="text-center text-[#B7BBC2] dark:text-[#5B5F68] text-[13.5px] px-2.5 pt-1.5 pb-0.5">No tasks yet — tap "Add task" below to start your day.</p>`;
+      wrap.innerHTML = emptyStateHtml('no-tasks');
       return;
     }
 
-    const visible = activeSubjectFilter ? tasks.filter(t => t.subject === activeSubjectFilter) : tasks;
+    let visible = activeSubjectFilter ? tasks.filter(t => t.subject === activeSubjectFilter) : tasks;
+
+    const q = searchQuery.trim().toLowerCase();
+    if(q){
+      visible = visible.filter(t =>
+        (t.title || '').toLowerCase().includes(q) ||
+        (t.subject || '').toLowerCase().includes(q) ||
+        (t.description || '').toLowerCase().includes(q)
+      );
+    }
 
     if(visible.length === 0){
-      wrap.innerHTML = `<p class="text-center text-[#B7BBC2] dark:text-[#5B5F68] text-[13.5px] px-2.5 pt-1.5 pb-0.5">No "${escapeHtml(activeSubjectFilter)}" tasks yet.</p>`;
+      wrap.innerHTML = q ? emptyStateHtml('no-search', q) : emptyStateHtml('no-subject', activeSubjectFilter);
       return;
     }
 
@@ -1196,6 +1275,46 @@
     });
   }
 
+  // ---- Empty state illustrations (small SVGs instead of plain text) ----
+  function emptyStateHtml(kind, extra){
+    if(kind === 'no-search'){
+      return `
+        <div class="flex flex-col items-center text-center px-6 pt-3 pb-1">
+          <svg viewBox="0 0 120 100" width="108" height="90" fill="none" class="mb-3 text-[#D7DBE1] dark:text-[#33363D]">
+            <rect x="14" y="18" width="70" height="54" rx="10" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="4 5"/>
+            <circle cx="86" cy="70" r="16" fill="none" stroke="currentColor" stroke-width="4"/>
+            <line x1="97" y1="81" x2="110" y2="94" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M28 34h30M28 44h42M28 54h24" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <p class="text-[13.5px] font-bold text-[#1E2126] dark:text-[#E7E9EC] mb-1">No matches for "${escapeHtml(extra)}"</p>
+          <p class="text-[12.5px] text-[#B7BBC2] dark:text-[#5B5F68]">Try a different keyword, or clear the search.</p>
+        </div>`;
+    }
+    if(kind === 'no-subject'){
+      return `
+        <div class="flex flex-col items-center text-center px-6 pt-3 pb-1">
+          <svg viewBox="0 0 120 100" width="100" height="84" fill="none" class="mb-3 text-[#D7DBE1] dark:text-[#33363D]">
+            <rect x="20" y="16" width="80" height="60" rx="12" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="4 5"/>
+            <circle cx="60" cy="46" r="10" fill="none" stroke="currentColor" stroke-width="3"/>
+            <path d="M45 62c3-6 9-9 15-9s12 3 15 9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <p class="text-[13.5px] font-bold text-[#1E2126] dark:text-[#E7E9EC] mb-1">No "${escapeHtml(extra)}" tasks yet</p>
+          <p class="text-[12.5px] text-[#B7BBC2] dark:text-[#5B5F68]">Add one, or pick another subject above.</p>
+        </div>`;
+    }
+    // default: no tasks at all
+    return `
+      <div class="flex flex-col items-center text-center px-6 pt-3 pb-1">
+        <svg viewBox="0 0 140 110" width="128" height="100" fill="none" class="mb-3 text-[#D7DBE1] dark:text-[#33363D]">
+          <rect x="18" y="30" width="70" height="52" rx="12" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="5 5" transform="rotate(-6 53 56)"/>
+          <rect x="44" y="20" width="70" height="52" rx="12" fill="none" stroke="currentColor" stroke-width="3.5" transform="rotate(4 79 46)"/>
+          <path d="M62 46l7 7 13-14" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(4 79 46)"/>
+        </svg>
+        <p class="text-[13.5px] font-bold text-[#1E2126] dark:text-[#E7E9EC] mb-1">No tasks yet</p>
+        <p class="text-[12.5px] text-[#B7BBC2] dark:text-[#5B5F68]">Tap "Add task" below to start your day — or press <span class="font-mono font-bold text-[#1E2126] dark:text-[#E7E9EC]">N</span>.</p>
+      </div>`;
+  }
+
   function toggleDone(id){
     const t = tasks.find(x=>x.id===id);
     if(!t) return;
@@ -1213,6 +1332,68 @@
     div.textContent = s;
     return div.innerHTML;
   }
+
+  // ---- Search bar (keyword search across title/subject/description) ----
+  const searchBarWrap = document.getElementById('searchBarWrap');
+  const searchInput = document.getElementById('searchInput');
+  const searchClearBtn = document.getElementById('searchClearBtn');
+
+  function updateSearchClearVisibility(){
+    searchClearBtn.classList.toggle('hidden', !searchInput.value);
+  }
+  searchInput.addEventListener('input', ()=>{
+    searchQuery = searchInput.value;
+    updateSearchClearVisibility();
+    render();
+  });
+  searchInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape'){
+      searchInput.value = '';
+      searchQuery = '';
+      updateSearchClearVisibility();
+      render();
+      searchInput.blur();
+    }
+  });
+  searchClearBtn.addEventListener('click', ()=>{
+    searchInput.value = '';
+    searchQuery = '';
+    updateSearchClearVisibility();
+    render();
+    searchInput.focus();
+  });
+
+  // ---- Keyboard shortcuts: "N" new task, "/" focus search, "Esc" already closes modals ----
+  function isTypingContext(el){
+    if(!el) return false;
+    const tag = el.tagName;
+    return tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable;
+  }
+  document.addEventListener('keydown', (e)=>{
+    if(e.metaKey || e.ctrlKey || e.altKey) return;
+    const typing = isTypingContext(document.activeElement);
+
+    if(e.key === '/' && !typing){
+      e.preventDefault();
+      searchInput.focus();
+      searchInput.select();
+      return;
+    }
+    if((e.key === 'n' || e.key === 'N') && !typing){
+      const anyModalOpen = !overlay.classList.contains('hidden') ||
+        !apiKeyOverlay.classList.contains('hidden') ||
+        !nameOverlay.classList.contains('hidden') ||
+        !clearDataOverlay.classList.contains('hidden') ||
+        !scheduleOverlay.classList.contains('hidden') ||
+        !shareOverlay.classList.contains('hidden') ||
+        !calendarOverlay.classList.contains('hidden') ||
+        !shareCardOverlay.classList.contains('hidden');
+      if(anyModalOpen) return;
+      e.preventDefault();
+      openAdd();
+      return;
+    }
+  });
 
   // ---- Modal logic ----
   const overlay = document.getElementById('overlay');
@@ -1943,6 +2124,7 @@
   function openScheduleModal(){
     closeProfileMenu();
     renderScheduleList();
+    updateSchedulePreview();     
     scheduleOverlay.classList.remove('hidden');
     scheduleOverlay.classList.add('flex');
   }
@@ -1979,9 +2161,9 @@
       const id = row.dataset.row;
       const c = classSchedule.find(x=>x.id===id);
       if(!c) return;
-      row.querySelector('.c-subject').addEventListener('input', (e)=>{ c.subject = e.target.value; saveClassSchedule(); });
-      row.querySelector('.c-start').addEventListener('change', (e)=>{ c.start = e.target.value; saveClassSchedule(); });
-      row.querySelector('.c-end').addEventListener('change', (e)=>{ c.end = e.target.value; saveClassSchedule(); });
+row.querySelector('.c-subject').addEventListener('input', (e)=>{ c.subject = e.target.value; saveClassSchedule(); queueSchedulePreview(); });
+      row.querySelector('.c-start').addEventListener('change', (e)=>{ c.start = e.target.value; saveClassSchedule(); queueSchedulePreview(); });
+      row.querySelector('.c-end').addEventListener('change', (e)=>{ c.end = e.target.value; saveClassSchedule(); queueSchedulePreview(); });
       row.querySelector('.c-del').addEventListener('click', ()=>{
         classSchedule = classSchedule.filter(x=>x.id!==id);
         saveClassSchedule();
@@ -2048,11 +2230,404 @@
     saveGeneratedSet(generated);
     saveTasks();
     render();
+    updateSchedulePreview(); 
     closeScheduleModal();
     showToast(added > 0 ? `Added ${added} class ticket${added===1?'':'s'} for this week.` : 'Already generated for this week — no new tickets.');
     // Instead of popping the add-task modal in the center, jump straight to the
     // calendar so the newly generated class tickets can be viewed there.
     openCalendar();
+  });
+
+ // ================= Save class schedule as a downloadable PNG image =================
+  const scheduleMonthMinus = document.getElementById('scheduleMonthMinus');
+  const scheduleMonthPlus = document.getElementById('scheduleMonthPlus');
+  const scheduleMonthCount = document.getElementById('scheduleMonthCount');
+  const scheduleSaveImageBtn = document.getElementById('scheduleSaveImageBtn');
+  const scheduleStylePicker = document.getElementById('scheduleStylePicker');
+  const scheduleThumbImg = document.getElementById('scheduleThumbImg');
+  const scheduleThumbEmpty = document.getElementById('scheduleThumbEmpty');
+  let scheduleImageMonths = 1;
+  let scheduleImageStyle = 'classic'; // 'classic' | 'bold'
+  const SCHEDULE_IMAGE_MAX_MONTHS = 6;
+  let scheduleThumbTimer = null;
+
+  scheduleMonthMinus.addEventListener('click', ()=>{
+    scheduleImageMonths = Math.max(1, scheduleImageMonths - 1);
+    scheduleMonthCount.textContent = scheduleImageMonths;
+    queueSchedulePreview();
+  });
+  scheduleMonthPlus.addEventListener('click', ()=>{
+    scheduleImageMonths = Math.min(SCHEDULE_IMAGE_MAX_MONTHS, scheduleImageMonths + 1);
+    scheduleMonthCount.textContent = scheduleImageMonths;
+    queueSchedulePreview();
+  });
+
+  scheduleStylePicker.querySelectorAll('.schedule-style-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      scheduleImageStyle = btn.dataset.style;
+      scheduleStylePicker.querySelectorAll('.schedule-style-btn').forEach(b=>{
+        const active = b === btn;
+        b.classList.toggle('border-[#1E2126]', active);
+        b.classList.toggle('dark:border-[#E7E9EC]', active);
+        b.classList.toggle('border-transparent', !active);
+      });
+      queueSchedulePreview();
+    });
+  });
+
+  function roundRectPath(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // Renders one month grid onto the canvas at the given top offset (Classic style),
+  // returns the height it used. Each class chip now shows subject + start time.
+  function drawScheduleMonthClassic(ctx, W, top, year, month){
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const pad = 48;
+    const gridW = W - pad * 2;
+    const cellW = gridW / 7;
+    const headerH = 64;
+    const dowH = 34;
+    const rowH = 92;
+
+    ctx.fillStyle = '#1E2126';
+    ctx.font = '800 30px Inter, sans-serif';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`${monthNames[month]} ${year}`, pad, top);
+
+    const dowY = top + headerH;
+    const dayLabels = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    ctx.font = '700 13px JetBrains Mono, monospace';
+    ctx.fillStyle = '#8A8F98';
+    dayLabels.forEach((d,i)=>{
+      const cx = pad + i * cellW + cellW/2;
+      const tw = ctx.measureText(d).width;
+      ctx.fillText(d, cx - tw/2, dowY);
+    });
+
+    const gridTop = dowY + dowH;
+    const firstDow = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const numRows = Math.ceil((firstDow + daysInMonth) / 7);
+
+    ctx.strokeStyle = '#E4E6EA';
+    ctx.lineWidth = 1.5;
+    roundRectPath(ctx, pad, gridTop, gridW, rowH * numRows, 16);
+    ctx.stroke();
+
+    for(let i=1;i<7;i++){
+      const x = pad + i * cellW;
+      ctx.beginPath();
+      ctx.moveTo(x, gridTop);
+      ctx.lineTo(x, gridTop + rowH * numRows);
+      ctx.stroke();
+    }
+    for(let r=1;r<numRows;r++){
+      const y = gridTop + r * rowH;
+      ctx.beginPath();
+      ctx.moveTo(pad, y);
+      ctx.lineTo(pad + gridW, y);
+      ctx.stroke();
+    }
+
+    const today = todayISO();
+    for(let d=1; d<=daysInMonth; d++){
+      const cellIndex = firstDow + d - 1;
+      const col = cellIndex % 7;
+      const row = Math.floor(cellIndex / 7);
+      const cx = pad + col * cellW;
+      const cy = gridTop + row * rowH;
+      const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const isToday = iso === today;
+
+      if(isToday){
+        ctx.fillStyle = 'rgba(58,103,216,0.08)';
+        ctx.fillRect(cx+1, cy+1, cellW-2, rowH-2);
+      }
+
+      ctx.font = (isToday ? '800 15px' : '700 15px') + ' Inter, sans-serif';
+      ctx.fillStyle = isToday ? '#3A67D8' : '#1E2126';
+      ctx.fillText(String(d), cx + 8, cy + 6);
+
+      const dayTasks = tasks.filter(t => t.date === iso && t.fromSchedule).sort((a,b)=> (a.start||'') < (b.start||'') ? -1 : 1);
+      let chipY = cy + 26;
+      dayTasks.slice(0, 3).forEach(t=>{
+        const themeKey = THEME_KEYS.includes(t.color) ? t.color : 'coral';
+        const ac = THEMES[themeKey].ac;
+        const bg = THEMES[themeKey].bg;
+        const chipH = 26;
+        const chipPad = 6;
+        const timeLabel = t.start ? fmtTime(t.start) : '';
+
+        ctx.font = '700 10.5px Inter, sans-serif';
+        let label = t.subject || t.title || '';
+        while(ctx.measureText(label).width > cellW - 16 && label.length > 3){
+          label = label.slice(0, -1);
+        }
+        if(label !== (t.subject || t.title || '')) label += '…';
+
+        const chipW = Math.max(
+          ctx.measureText(label).width,
+          timeLabel ? (ctx.font = '600 9.5px JetBrains Mono, monospace', ctx.measureText(timeLabel).width) : 0
+        ) + chipPad * 2;
+        const finalChipW = Math.min(cellW - 12, chipW);
+
+        ctx.fillStyle = bg;
+        roundRectPath(ctx, cx + 6, chipY, finalChipW, chipH, 6);
+        ctx.fill();
+
+        ctx.font = '700 10.5px Inter, sans-serif';
+        ctx.fillStyle = ac;
+        ctx.fillText(label, cx + 6 + chipPad, chipY + 3);
+
+        if(timeLabel){
+          ctx.font = '600 9px JetBrains Mono, monospace';
+          ctx.globalAlpha = 0.8;
+          ctx.fillText(timeLabel, cx + 6 + chipPad, chipY + 14);
+          ctx.globalAlpha = 1;
+        }
+        chipY += chipH + 4;
+      });
+      if(dayTasks.length > 3){
+        ctx.font = '600 10px Inter, sans-serif';
+        ctx.fillStyle = '#B7BBC2';
+        ctx.fillText(`+${dayTasks.length - 3} more`, cx + 8, chipY + 1);
+      }
+    }
+
+    return (gridTop + rowH * numRows) - top;
+  }
+
+  // Alternate "Bold cards" style: dark theme, left-accent-bar rows per day, larger
+  // type, time shown boldly next to each class.
+  function drawScheduleMonthBold(ctx, W, top, year, month){
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const pad = 48;
+    const gridW = W - pad * 2;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 30px Inter, sans-serif';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`${monthNames[month]} ${year}`, pad, top);
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = todayISO();
+
+    // gather only the days that actually have classes, in date order — this style
+    // is a readable agenda list rather than a grid, so time is front and center.
+    const rows = [];
+    for(let d=1; d<=daysInMonth; d++){
+      const iso = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dayTasks = tasks.filter(t => t.date === iso && t.fromSchedule).sort((a,b)=> (a.start||'') < (b.start||'') ? -1 : 1);
+      if(dayTasks.length) rows.push({ d, iso, dayTasks });
+    }
+
+    let cursorY = top + 56;
+    if(rows.length === 0){
+      ctx.font = '600 18px Inter, sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.fillText('No classes generated for this month yet.', pad, cursorY);
+      return cursorY - top + 40;
+    }
+
+    const dowShort = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    rows.forEach(row=>{
+      const dow = new Date(year, month, row.d).getDay();
+      const isToday = row.iso === today;
+      const dateLabel = `${dowShort[dow]} ${row.d}`;
+
+      ctx.font = '700 13px JetBrains Mono, monospace';
+      ctx.fillStyle = isToday ? '#3A67D8' : 'rgba(255,255,255,0.5)';
+      ctx.fillText(dateLabel.toUpperCase(), pad, cursorY);
+      cursorY += 22;
+
+      row.dayTasks.forEach(t=>{
+        const themeKey = THEME_KEYS.includes(t.color) ? t.color : 'coral';
+        const ac = THEMES[themeKey].ac;
+        const rowH = 52;
+
+        ctx.fillStyle = '#26282D';
+        roundRectPath(ctx, pad, cursorY, gridW, rowH, 12);
+        ctx.fill();
+
+        ctx.fillStyle = ac;
+        roundRectPath(ctx, pad, cursorY, 8, rowH, 4);
+        ctx.fill();
+
+        ctx.font = '700 19px Inter, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        let label = t.subject || t.title || '';
+        ctx.fillText(label, pad + 26, cursorY + 15);
+
+        if(t.start && t.end){
+          const timeLabel = `${fmtTime(t.start)} – ${fmtTime(t.end)}`;
+          ctx.font = '700 15px JetBrains Mono, monospace';
+          ctx.fillStyle = 'rgba(255,255,255,0.7)';
+          const tw = ctx.measureText(timeLabel).width;
+          ctx.fillText(timeLabel, pad + gridW - 20 - tw, cursorY + 17);
+        }
+
+        cursorY += rowH + 10;
+      });
+      cursorY += 12;
+    });
+
+    return cursorY - top;
+  }
+
+  function drawScheduleMonth(ctx, W, top, year, month, style){
+    return style === 'bold'
+      ? drawScheduleMonthBold(ctx, W, top, year, month)
+      : drawScheduleMonthClassic(ctx, W, top, year, month);
+  }
+
+  async function renderScheduleToCanvas(numMonths, style){
+    const W = 900;
+    const pad = 48;
+    const now = new Date();
+    let year = now.getFullYear();
+    let month = now.getMonth();
+
+    const months = [];
+    for(let i=0;i<numMonths;i++){
+      const y = year + Math.floor((month + i) / 12);
+      const m = (month + i) % 12;
+      months.push({ y, m });
+    }
+
+    // For the classic grid we can precompute exact row counts; for the bold
+    // agenda style the height depends on how many classes exist, so we render
+    // onto an oversized offscreen pass first isn't needed — we just build the
+    // canvas generously tall then trim, which is simplest here.
+    const monthBlockGap = 56;
+    const topBanner = 120;
+    const bottomPad = 60;
+
+    let estH = topBanner;
+    if(style === 'bold'){
+      months.forEach(()=>{ estH += 900; }); // generous upper bound, trimmed after drawing
+    } else {
+      months.forEach(mo=>{
+        const firstDow = new Date(mo.y, mo.m, 1).getDay();
+        const daysInMonth = new Date(mo.y, mo.m + 1, 0).getDate();
+        const numRows = Math.ceil((firstDow + daysInMonth) / 7);
+        estH += 64 + 34 + 92 * numRows + monthBlockGap;
+      });
+    }
+    estH += bottomPad;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = estH;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = style === 'bold' ? '#1E2126' : '#EDEFF2';
+    ctx.fillRect(0, 0, W, estH);
+
+    const grad = ctx.createLinearGradient(0, 0, W, topBanner);
+    if(style === 'bold'){
+      grad.addColorStop(0, '#1E2126');
+      grad.addColorStop(1, '#1E2126');
+    } else {
+      grad.addColorStop(0, '#3A67D8');
+      grad.addColorStop(1, '#C13575');
+    }
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, topBanner);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = '700 15px Inter, sans-serif';
+    ctx.textBaseline = 'top';
+    ctx.fillText('PURRFECTPLANNER', pad, 28);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 26px Inter, sans-serif';
+    const title = numMonths === 1 ? 'Class Schedule' : `Class Schedule · ${numMonths} months`;
+    ctx.fillText(title, pad, 54);
+
+    const genLabel = `Generated ${new Date().toLocaleDateString('en-US',{month:'short', day:'numeric', year:'numeric'})}`;
+    ctx.font = '600 12px JetBrains Mono, monospace';
+    const glW = ctx.measureText(genLabel).width;
+    ctx.fillText(genLabel, W - pad - glW, 54);
+
+    let cursorY = topBanner + 34;
+    months.forEach((mo)=>{
+      const used = drawScheduleMonth(ctx, W, cursorY, mo.y, mo.m, style);
+      cursorY += used + monthBlockGap;
+    });
+
+    const finalH = cursorY - monthBlockGap + bottomPad;
+
+    // trim the canvas to the actual content height
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = W;
+    finalCanvas.height = finalH;
+    const fctx = finalCanvas.getContext('2d');
+    fctx.drawImage(canvas, 0, 0, W, finalH, 0, 0, W, finalH);
+
+    return finalCanvas;
+  }
+
+  // Live thumbnail preview shown in the modal before saving, so users can check
+  // the layout/time/design before committing to a download.
+  function queueSchedulePreview(){
+    clearTimeout(scheduleThumbTimer);
+    scheduleThumbTimer = setTimeout(updateSchedulePreview, 250);
+  }
+
+  async function updateSchedulePreview(){
+    const hasClasses = tasks.some(t => t.fromSchedule);
+    if(!hasClasses){
+      scheduleThumbImg.classList.add('hidden');
+      scheduleThumbEmpty.classList.remove('hidden');
+      return;
+    }
+    try{
+      const canvas = await renderScheduleToCanvas(scheduleImageMonths, scheduleImageStyle);
+      scheduleThumbImg.src = canvas.toDataURL('image/png');
+      scheduleThumbImg.classList.remove('hidden');
+      scheduleThumbEmpty.classList.add('hidden');
+    }catch(e){
+      scheduleThumbImg.classList.add('hidden');
+      scheduleThumbEmpty.classList.remove('hidden');
+      scheduleThumbEmpty.textContent = 'Could not render a preview.';
+    }
+  }
+
+  scheduleSaveImageBtn.addEventListener('click', async ()=>{
+    const original = scheduleSaveImageBtn.innerHTML;
+    scheduleSaveImageBtn.disabled = true;
+    scheduleSaveImageBtn.innerHTML = `<span class="font-bold">Rendering...</span>`;
+    try{
+      const canvas = await renderScheduleToCanvas(scheduleImageMonths, scheduleImageStyle);
+      await new Promise(resolve=>{
+        canvas.toBlob(blob=>{
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const suffix = scheduleImageMonths === 1 ? todayISO() : `${scheduleImageMonths}mo-${todayISO()}`;
+          a.download = `class-schedule-${scheduleImageStyle}-${suffix}.png`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          resolve();
+        }, 'image/png');
+      });
+      showToast(`Schedule image saved (${scheduleImageMonths} month${scheduleImageMonths===1?'':'s'}).`);
+    }catch(e){
+      showToast('Could not generate the schedule image.');
+    } finally {
+      scheduleSaveImageBtn.disabled = false;
+      scheduleSaveImageBtn.innerHTML = original;
+    }
   });
 
   // ================= Study buddy share link =================
