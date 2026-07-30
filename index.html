@@ -7,8 +7,8 @@
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1E2126">
-<link rel="icon" href="iconn.png">
-<link rel="apple-touch-icon" href="iconn.png">
+<link rel="icon" href="assets/icon2.png">
+<link rel="apple-touch-icon" href="assets/icon2.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PurrfectPlanner">
@@ -149,6 +149,164 @@
 .draggable-card{touch-action:none}
 .draggable-card.dragging{cursor:grabbing}
 
+/* ===== Departure board / split-flap counters ===== */
+.dboard {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+.dboard-cell {
+  background: #1E2126;
+  border-radius: 4px;
+  padding: 2px 3px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 2px 4px rgba(0,0,0,.25);
+}
+.dark .dboard-cell { background: #0C0D0F; }
+.dboard-flap {
+  position: relative;
+  width: 15px;
+  height: 22px;
+  background: #2A2D33;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.dboard-flap span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 800;
+  font-size: 13px;
+  color: #F4C542;
+  letter-spacing: 0;
+}
+.dboard-flap::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 1px;
+  background: rgba(0,0,0,.45);
+  z-index: 2;
+}
+.dboard-flap.flipping span { animation: flapFlip .28s ease-in-out; }
+@keyframes flapFlip {
+  0% { transform: rotateX(0deg); }
+  50% { transform: rotateX(-90deg); }
+  51% { transform: rotateX(90deg); }
+  100% { transform: rotateX(0deg); }
+}
+.dboard-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #8A8F98;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* ===== Ticket stub punch calendar ===== */
+.stub-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+.stub-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  position: relative;
+  background: #EDEFF2;
+  border: 1.5px dashed #D7DBE1;
+}
+.dark .stub-cell { background: #26282D; border-color: #33363D; }
+.stub-cell.punched {
+  background: #3A67D8;
+  border-style: solid;
+  border-color: #3A67D8;
+}
+.stub-cell.punched::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 40%;
+  height: 40%;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.25);
+}
+.stub-cell.today {
+  box-shadow: 0 0 0 2px #D9932A;
+}
+
+/* ===== Boarding pass modal ===== */
+.boarding-pass {
+  background: #fff;
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 60px -20px rgba(0,0,0,.4);
+}
+.dark .boarding-pass { background: #1E2126; }
+.boarding-pass .bp-strip {
+  background: repeating-linear-gradient(135deg, #1E2126, #1E2126 10px, #3A67D8 10px, #3A67D8 20px);
+  height: 8px;
+}
+.boarding-pass .bp-perf {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 0;
+  border-left: 2.5px dashed #D7DBE1;
+}
+.dark .boarding-pass .bp-perf { border-left-color: #33363D; }
+.boarding-pass .bp-notch {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: #EDEFF2;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.dark .boarding-pass .bp-notch { background: #15171B; }
+.bp-barcode {
+  display: flex;
+  align-items: stretch;
+  gap: 1.5px;
+  height: 34px;
+}
+.bp-barcode span {
+  display: block;
+  background: #1E2126;
+  flex-shrink: 0;
+}
+.dark .bp-barcode span { background: #E7E9EC; }
+.bp-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #8A8F98;
+}
+.bp-value {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+.bp-notch-sm {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #EDEFF2;
+  border-radius: 50%;
+  left: -7px;
+}
+.dark .bp-notch-sm { background: #15171B; }
+
 </style>
 </head>
 <body class="relative bg-[#EDEFF2] dark:bg-[#15171B] [background-image:linear-gradient(to_right,rgba(148,152,158,.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,152,158,.12)_1px,transparent_1px)] dark:[background-image:linear-gradient(to_right,rgba(255,255,255,.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,.06)_1px,transparent_1px)] [background-size:80px_80px] font-sans text-[#1E2126] dark:text-[#E7E9EC] min-h-screen flex justify-center max-[900px]:flex-col max-[900px]:items-center px-5 pt-14 pb-[100px] transition-colors duration-200">
@@ -182,6 +340,10 @@
         <button id="qaScheduleBtn" aria-label="Class schedule" data-tooltip="Class schedule" class="qa-btn">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18"/><path d="M8 3v4M16 3v4"/></svg>
         </button>
+        <button id="qaZenBtn" aria-label="Zen mode" data-tooltip="Zen mode" class="qa-btn">
+          <svg id="qaZenIconOn" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg id="qaZenIconOff" class="hidden" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>
+        </button>
         <button id="quickExpandBtn" aria-label="More" data-tooltip="More" class="qa-btn">
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
         </button>
@@ -195,6 +357,14 @@
           <button id="qaShareCardBtn" class="qa-pop-btn w-full">
             <span class="qa-pop-icon"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 13l2.5-3 2 2L17 8"/></svg></span>
             Share streak card
+          </button>
+          <button id="qaTicketStubBtn" class="qa-pop-btn w-full">
+            <span class="qa-pop-icon"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18" stroke-dasharray="2 2"/></svg></span>
+            Ticket stub calendar
+          </button>
+          <button id="qaHideCardsBtn" class="qa-pop-btn w-full">
+            <span class="qa-pop-icon"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg></span>
+            <span class="qa-hide-cards-label">Hide side cards</span>
           </button>
           <button id="qaShareBtn" class="qa-pop-btn w-full">
             <span class="qa-pop-icon"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-3.9M8.6 13.5l6.8 3.9"/></svg></span>
@@ -396,9 +566,33 @@
       </div>
     </div>
   </div>
+
+<div id="departureBoardCard" class="draggable-card relative z-10 mt-3 [transform:rotate(-0.5deg)] max-[900px]:mt-3 max-[900px]:[transform:none]">
+  <div class="bg-white dark:bg-[#1E2126] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] rounded-[22px] shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)] px-4 pt-[14px] pb-[14px]">
+    <div class="flex items-center justify-between mb-2.5">
+      <p class="font-mono text-[10.5px] font-bold uppercase tracking-[.1em] text-[#8A8F98] dark:text-[#9AA3AE]">Departures</p>
+      <p id="dboardStreakLabel" class="hidden font-mono text-[10.5px] font-bold uppercase tracking-[.08em] text-[#D9932A] items-center gap-1"><span id="dboardStreakFlame" class="inline-flex"></span><span id="dboardStreakCount">0</span> day streak</p>
+    </div>
+    <div class="flex items-start gap-4">
+      <div>
+        <div class="dboard" id="dboardTasks"></div>
+        <p class="dboard-label">Tasks</p>
+      </div>
+      <div>
+        <div class="dboard" id="dboardStreak"></div>
+        <p class="dboard-label">Streak</p>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
 
 <div id="dayHoverTip" class="hidden fixed z-[95] pointer-events-none max-w-[220px] bg-[#1E2126] dark:bg-[#26282D] text-white rounded-xl px-3 py-2.5 shadow-[0_12px_30px_-10px_rgba(0,0,0,.45)] text-[12px] leading-snug"></div>
+
+<button id="zenExitBtn" title="Exit Zen mode" class="hidden fixed top-5 right-5 z-40 items-center gap-2 bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] font-mono text-[11px] font-bold uppercase tracking-[.08em] rounded-full pl-3 pr-4 py-2 shadow-[0_14px_30px_-12px_rgba(0,0,0,.5)] hover:opacity-90 transition-opacity">
+  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>
+  Exit zen mode
+</button>
 
   <div class="app w-full max-w-[460px]">
   <div id="searchBarWrap" class="relative mb-3">
@@ -563,6 +757,21 @@
     <div class="flex gap-2.5">
       <button id="clearDataCancelBtn" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#F1F2F4] dark:bg-[#26282D] text-[#1E2126] dark:text-[#E7E9EC] hover:bg-[#E7E8EB] dark:hover:bg-[#303339]">Cancel</button>
       <button id="clearDataConfirmBtn" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#C13535] text-white hover:opacity-[.88]">Clear everything</button>
+    </div>
+  </div>
+</div>
+
+<!-- Generic delete confirmation modal (tasks, classes, recurring items) -->
+<div id="confirmDeleteOverlay" class="hidden fixed inset-0 bg-[#141a1a]/[0.42] dark:bg-black/60 backdrop-blur-[2px] items-center justify-center p-5 z-[75]">
+  <div class="w-full max-w-[340px] bg-white dark:bg-[#1E2126] rounded-[24px] border-2 border-dashed border-[#C13535]/60 px-[26px] pt-[26px] pb-[22px] shadow-[0_20px_60px_-20px_rgba(0,0,0,.35)] text-center animate-popIn">
+    <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-[#FCEAE7] flex items-center justify-center text-[#C13535]">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+    </div>
+    <h2 id="confirmDeleteTitle" class="text-[17px] font-extrabold tracking-[-0.01em] mb-1.5">Delete this?</h2>
+    <p id="confirmDeleteMsg" class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] mb-5 leading-relaxed">This can't be undone.</p>
+    <div class="flex gap-2.5">
+      <button id="confirmDeleteCancelBtn" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#F1F2F4] dark:bg-[#26282D] text-[#1E2126] dark:text-[#E7E9EC] hover:bg-[#E7E8EB] dark:hover:bg-[#303339]">Cancel</button>
+      <button id="confirmDeleteConfirmBtn" class="flex-1 border-none rounded-xl px-3.5 py-[11px] font-bold text-sm cursor-pointer font-sans bg-[#C13535] text-white hover:opacity-[.88]">Delete</button>
     </div>
   </div>
 </div>
@@ -822,10 +1031,83 @@
   </div>
 </div>
 
+<!-- Ticket stub punch calendar modal -->
+<div id="stubCalOverlay" class="hidden fixed inset-0 bg-[#141a1a]/[0.42] dark:bg-black/60 backdrop-blur-[2px] items-center justify-center p-5 z-[70]">
+  <div class="w-full max-w-[380px] bg-white dark:bg-[#1E2126] rounded-[24px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] px-[24px] pt-[24px] pb-[22px] shadow-[0_20px_60px_-20px_rgba(0,0,0,.35)]">
+    <div class="flex items-center justify-between mb-1">
+      <h2 class="text-[17px] font-extrabold tracking-[-0.01em]">Ticket stub calendar</h2>
+      <button id="stubCalCloseBtn" class="w-8 h-8 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#8A8F98] dark:text-[#9AA3AE] hover:text-[#1E2126] dark:hover:text-white">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <p class="text-[12px] text-[#8A8F98] dark:text-[#9AA3AE] mb-4 leading-relaxed">Every punched stub is a day you completed at least one ticket. Last 35 days.</p>
+
+    <div class="stub-grid mb-3" id="stubCalGrid"></div>
+
+    <div class="flex items-center gap-4 mt-4 pt-3.5 border-t border-dashed border-[#D7DBE1] dark:border-[#33363D]">
+      <div class="flex items-center gap-1.5">
+        <span class="stub-cell punched" style="width:14px;height:14px;"></span>
+        <span class="text-[11px] font-semibold text-[#8A8F98] dark:text-[#9AA3AE]">Punched</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="stub-cell" style="width:14px;height:14px;"></span>
+        <span class="text-[11px] font-semibold text-[#8A8F98] dark:text-[#9AA3AE]">Empty</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Boarding pass ticket modal (read-only styled view of a task) -->
+<div id="bpOverlay" class="hidden fixed inset-0 bg-[#141a1a]/[0.42] dark:bg-black/60 backdrop-blur-[2px] items-center justify-center p-5 z-[70]">
+  <div class="w-full max-w-[420px] boarding-pass">
+    <div class="bp-strip"></div>
+    <div class="flex">
+      <div class="flex-1 px-6 py-5 relative">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-mono text-[10px] font-bold uppercase tracking-[.16em] text-[#3A67D8]">Boarding Pass</span>
+          <button id="bpCloseBtn" class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#8A8F98] dark:text-[#9AA3AE] hover:text-[#1E2126] dark:hover:text-white">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+          </button>
+        </div>
+
+        <p id="bpTitle" class="text-[19px] font-extrabold tracking-[-0.01em] leading-tight mb-4">Task title</p>
+
+        <div class="grid grid-cols-2 gap-y-3.5 gap-x-3 mb-4">
+          <div>
+            <p class="bp-label mb-0.5">Gate (subject)</p>
+            <p id="bpGate" class="bp-value text-[15px]">—</p>
+          </div>
+          <div>
+            <p class="bp-label mb-0.5">Seat (time)</p>
+            <p id="bpSeat" class="bp-value text-[15px]">—</p>
+          </div>
+          <div>
+            <p class="bp-label mb-0.5">Date</p>
+            <p id="bpDate" class="bp-value text-[15px]">—</p>
+          </div>
+          <div>
+            <p class="bp-label mb-0.5">Status</p>
+            <p id="bpStatus" class="bp-value text-[15px]">—</p>
+          </div>
+        </div>
+
+        <p id="bpDesc" class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed mb-1"></p>
+      </div>
+
+      <div class="relative w-[110px] shrink-0 border-l-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] px-3 py-5 flex flex-col items-center justify-between">
+        <div class="bp-notch" style="left:-11px; top:0;"></div>
+        <div class="bp-notch" style="left:-11px; top:auto; bottom:0; transform:translateY(50%);"></div>
+        <p class="font-mono text-[9px] font-bold uppercase tracking-[.1em] text-[#8A8F98] dark:text-[#9AA3AE] [writing-mode:vertical-rl] rotate-180">PurrfectPlanner</p>
+        <div class="bp-barcode w-full" id="bpBarcode"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Cat Nap Focus timer modal -->
 <div id="focusOverlay" class="hidden fixed inset-0 bg-[#141a1a]/[0.42] dark:bg-black/60 backdrop-blur-[2px] items-center justify-center p-5 z-[70]">
   <div class="w-full max-w-[360px] bg-white dark:bg-[#1E2126] rounded-[24px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] px-[26px] pt-[26px] pb-[22px] shadow-[0_20px_60px_-20px_rgba(0,0,0,.35)] text-center">
-    <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center justify-between mb-1">
       <h2 class="text-[17px] font-extrabold tracking-[-0.01em]">Cat Nap Focus</h2>
       <div class="flex items-center gap-1.5">
         <button id="focusMinimizeBtn" title="Minimize" class="w-8 h-8 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#8A8F98] dark:text-[#9AA3AE] hover:text-[#1E2126] dark:hover:text-white">
@@ -836,6 +1118,7 @@
         </button>
       </div>
     </div>
+    <p class="font-mono text-[9.5px] font-bold uppercase tracking-[.16em] text-[#3A67D8] mb-2.5">✈ Now boarding</p>
 
     <div class="mb-3.5 text-left">
       <label class="block text-[11.5px] font-bold uppercase tracking-[.05em] text-[#8A8F98] dark:text-[#9AA3AE] mb-1.5">What are you focusing on?</label>
@@ -1357,8 +1640,115 @@
       label.classList.add('hidden');
       label.classList.remove('flex');
     }
+
+    const dLabel = document.getElementById('dboardStreakLabel');
+    const dCountEl = document.getElementById('dboardStreakCount');
+    const dFlameEl = document.getElementById('dboardStreakFlame');
+    if(dLabel && dCountEl){
+      if(dFlameEl && !dFlameEl.innerHTML) dFlameEl.innerHTML = FLAME_SVG;
+      if(streak > 0){
+        dCountEl.textContent = streak;
+        dLabel.classList.remove('hidden');
+        dLabel.classList.add('flex');
+      } else {
+        dLabel.classList.add('hidden');
+        dLabel.classList.remove('flex');
+      }
+    }
+
     updateMoodUI();
+    updateDepartureBoard();
   }
+
+  // ================= Departure board (split-flap counters) =================
+  function renderFlapDigits(containerId, value, minDigits){
+    const el = document.getElementById(containerId);
+    if(!el) return;
+    const str = String(value).padStart(minDigits || 1, '0');
+    const chars = str.split('');
+    const prev = el.dataset.prev || '';
+    el.dataset.prev = str;
+    el.innerHTML = chars.map((ch, i) => `
+      <div class="dboard-cell">
+        <div class="dboard-flap ${prev[i] !== ch ? 'flipping' : ''}"><span>${ch}</span></div>
+      </div>`).join('');
+  }
+  function updateDepartureBoard(){
+    const openCount = tasks.filter(t=>!t.done).length;
+    renderFlapDigits('dboardTasks', openCount, 2);
+    renderFlapDigits('dboardStreak', computeStreak(), 2);
+  }
+
+  // ================= Ticket stub punch calendar =================
+  function renderStubCalendar(){
+    const grid = document.getElementById('stubCalGrid');
+    if(!grid) return;
+    const log = getCompletedLog();
+    const today = new Date();
+    const days = [];
+    for(let i = 34; i >= 0; i--){
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      days.push({ iso, punched: !!log[iso], isToday: i === 0 });
+    }
+    grid.innerHTML = days.map(d =>
+      `<div class="stub-cell ${d.punched ? 'punched' : ''} ${d.isToday ? 'today' : ''}" title="${d.iso}"></div>`
+    ).join('');
+  }
+  function openStubCalendar(){
+    closeQuickActionsPopover();
+    renderStubCalendar();
+    const overlay = document.getElementById('stubCalOverlay');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+  }
+  function closeStubCalendar(){
+    const overlay = document.getElementById('stubCalOverlay');
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+  }
+  document.getElementById('qaTicketStubBtn')?.addEventListener('click', openStubCalendar);
+  document.getElementById('stubCalCloseBtn')?.addEventListener('click', closeStubCalendar);
+  document.getElementById('stubCalOverlay')?.addEventListener('click', (e)=>{
+    if(e.target.id === 'stubCalOverlay') closeStubCalendar();
+  });
+
+  // ================= Boarding pass ticket view =================
+  function renderBpBarcode(){
+    const bar = document.getElementById('bpBarcode');
+    if(!bar) return;
+    let html = '';
+    for(let i = 0; i < 22; i++){
+      const w = [2,3,1,4,2,1,3][i % 7];
+      html += `<span style="width:${w}px;height:100%;"></span>`;
+    }
+    bar.innerHTML = html;
+  }
+  function openBoardingPass(id){
+    const t = tasks.find(x => x.id === id);
+    if(!t) return;
+    document.getElementById('bpTitle').textContent = t.title;
+    document.getElementById('bpGate').textContent = t.subject || 'General';
+    document.getElementById('bpSeat').textContent = (t.start && t.end) ? `${fmtTime(t.start)} – ${fmtTime(t.end)}` : (t.start ? fmtTime(t.start) : 'Anytime');
+    const h = fmtHeader(t.date);
+    document.getElementById('bpDate').innerHTML = h.dateLabel;
+    document.getElementById('bpStatus').textContent = t.done ? 'Boarded ✓' : 'Boarding';
+    document.getElementById('bpDesc').textContent = t.description || '';
+    renderBpBarcode();
+    const overlay = document.getElementById('bpOverlay');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+  }
+  function closeBoardingPass(){
+    const overlay = document.getElementById('bpOverlay');
+    overlay.classList.add('hidden');
+    overlay.classList.remove('flex');
+  }
+  document.getElementById('bpCloseBtn')?.addEventListener('click', closeBoardingPass);
+  document.getElementById('bpOverlay')?.addEventListener('click', (e)=>{
+    if(e.target.id === 'bpOverlay') closeBoardingPass();
+  });
 
   // ---- Cat mood indicator (sleepy -> alert -> zoomies), based on today's completion rate ----
   const moodIcon = document.getElementById('moodIcon');
@@ -1693,6 +2083,9 @@
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
                 ${subtaskBadge || (dur ? `<span class="font-mono text-[11.5px] font-bold px-[9px] py-1 rounded-full whitespace-nowrap ${themeBadgeClasses(themeKey)}">${dur}</span>` : '')}
+                <button class="bp-btn w-6 h-6 rounded-full bg-white/65 flex items-center justify-center opacity-0 scale-[.7] transition-all duration-150 group-hover:opacity-100 group-hover:scale-100 hover:bg-white/95" data-bp="${t.id}" title="View boarding pass">
+                  <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M2.5 10h19" stroke-dasharray="1.6 1.6"/></svg>
+                </button>
                 <button class="del-btn w-6 h-6 rounded-full bg-white/65 flex items-center justify-center opacity-0 scale-[.7] transition-all duration-150 group-hover:opacity-100 group-hover:scale-100 hover:bg-white/95" data-del="${t.id}" title="Delete">
                   <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
                 </button>
@@ -1706,7 +2099,11 @@
     wrap.querySelectorAll('.del-btn').forEach(btn=>{
       btn.addEventListener('click', (e)=>{
         e.stopPropagation();
-        deleteTaskWithUndo(btn.dataset.del);
+        const id = btn.dataset.del;
+        const t = tasks.find(x=>x.id===id);
+        confirmDelete('Delete this ticket?', t ? `"${t.title}" will be removed.` : 'This ticket will be removed.', ()=>{
+          deleteTaskWithUndo(id);
+        });
       });
     });
 
@@ -1714,6 +2111,13 @@
       btn.addEventListener('click', (e)=>{
         e.stopPropagation();
         toggleDone(btn.dataset.done);
+      });
+    });
+
+    wrap.querySelectorAll('.bp-btn').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        openBoardingPass(btn.dataset.bp);
       });
     });
 
@@ -2028,8 +2432,41 @@
 
   deleteFromModal.addEventListener('click', ()=>{
     if(!editingId) return;
-    deleteTaskWithUndo(editingId);
-    closeModal();
+    const t = tasks.find(x=>x.id===editingId);
+    confirmDelete('Delete this ticket?', t ? `"${t.title}" will be removed.` : 'This ticket will be removed.', ()=>{
+      deleteTaskWithUndo(editingId);
+      closeModal();
+    });
+  });
+
+  // ================= Generic delete confirmation =================
+  const confirmDeleteOverlay = document.getElementById('confirmDeleteOverlay');
+  const confirmDeleteTitle = document.getElementById('confirmDeleteTitle');
+  const confirmDeleteMsg = document.getElementById('confirmDeleteMsg');
+  const confirmDeleteCancelBtn = document.getElementById('confirmDeleteCancelBtn');
+  const confirmDeleteConfirmBtn = document.getElementById('confirmDeleteConfirmBtn');
+  let pendingConfirmAction = null;
+
+  function confirmDelete(title, message, onConfirm){
+    confirmDeleteTitle.textContent = title;
+    confirmDeleteMsg.textContent = message;
+    pendingConfirmAction = onConfirm;
+    confirmDeleteOverlay.classList.remove('hidden');
+    confirmDeleteOverlay.classList.add('flex');
+  }
+  function closeConfirmDelete(){
+    confirmDeleteOverlay.classList.add('hidden');
+    confirmDeleteOverlay.classList.remove('flex');
+    pendingConfirmAction = null;
+  }
+  confirmDeleteCancelBtn.addEventListener('click', closeConfirmDelete);
+  confirmDeleteOverlay.addEventListener('click', (e)=>{
+    if(e.target === confirmDeleteOverlay) closeConfirmDelete();
+  });
+  confirmDeleteConfirmBtn.addEventListener('click', ()=>{
+    const action = pendingConfirmAction;
+    closeConfirmDelete();
+    if(action) action();
   });
 
   function deleteTaskWithUndo(id){
@@ -2215,11 +2652,11 @@
   const addNoteBtn = document.getElementById('openAddNote');
 
   const NOTE_THEMES = [
-    { key:'olive',  cardBg:'bg-[#EEF1DA]', ac:'text-[#7C8A3C]', tape:'text-[#9AA65A]' },
-    { key:'pink',   cardBg:'bg-[#FBE4EC]', ac:'text-[#C23574]', tape:'text-[#E0568F]' },
-    { key:'teal',   cardBg:'bg-[#DFF1F5]', ac:'text-[#2F8FA6]', tape:'text-[#5FB8C9]' },
-    { key:'amber',  cardBg:'bg-[#FCF1DF]', ac:'text-[#D9932A]', tape:'text-[#E8B45A]' },
-    { key:'violet', cardBg:'bg-[#EFEAFB]', ac:'text-[#7B57D6]', tape:'text-[#A98CE8]' }
+    { key:'olive',  cardBg:'bg-[#EEF1DA]', ac:'text-[#7C8A3C]', tape:'text-[#9AA65A]', hex:'#7C8A3C' },
+    { key:'pink',   cardBg:'bg-[#FBE4EC]', ac:'text-[#C23574]', tape:'text-[#E0568F]', hex:'#C23574' },
+    { key:'teal',   cardBg:'bg-[#DFF1F5]', ac:'text-[#2F8FA6]', tape:'text-[#5FB8C9]', hex:'#2F8FA6' },
+    { key:'amber',  cardBg:'bg-[#FCF1DF]', ac:'text-[#D9932A]', tape:'text-[#E8B45A]', hex:'#D9932A' },
+    { key:'violet', cardBg:'bg-[#EFEAFB]', ac:'text-[#7B57D6]', tape:'text-[#A98CE8]', hex:'#7B57D6' }
   ];
 
   const TRASH_SVG = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
@@ -2249,23 +2686,45 @@
     notes.forEach((note, i)=>{
       const theme = NOTE_THEMES.find(t=>t.key===note.theme) || NOTE_THEMES[0];
       const el = document.createElement('div');
-      el.className = 'sticky-note absolute w-[224px] pointer-events-auto cursor-grab touch-none select-none group';
+      el.className = 'sticky-note absolute w-[246px] pointer-events-auto cursor-grab touch-none select-none group';
       el.style.left = note.x + 'px';
       el.style.top = note.y + 'px';
       el.style.setProperty('--rot', note.rot + 'deg');
       el.style.setProperty('--tape-rot', note.tapeRot + 'deg');
 
+      const barWidths = [10,4,7,3,9,5,3,8,4,6,9,3,5];
+      const barcodeHtml = barWidths.map(w => `<span style="width:${w}%;background:${theme.hex};" class="block"></span>`).join('');
+
       el.innerHTML = `
-        <div class="absolute -top-[30px] left-1/2 pointer-events-none mix-blend-multiply ${theme.tape} [transform:translateX(-50%)_rotate(var(--tape-rot))]">${TAPE_SVG}</div>
-        <div class="note-card relative rounded-[20px] px-[18px] pt-[22px] pb-[18px] shadow-[0_14px_30px_-16px_rgba(20,22,26,.35),0_2px_8px_rgba(20,22,26,.08)] transition-transform duration-[180ms] group-hover:shadow-[0_20px_40px_-16px_rgba(20,22,26,.42)] ${theme.cardBg} [transform:rotate(var(--rot))]">
-          <button class="note-del absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-white/55 flex items-center justify-center cursor-pointer opacity-0 scale-75 transition-all duration-150 group-hover:opacity-100 group-hover:scale-100 hover:bg-white text-[#1E2126]/55 hover:text-[#C13535]" title="Delete note">${TRASH_SVG}</button>
-          <div class="flex items-center gap-2 mb-2">
-            <p class="font-mono font-bold text-[13px] ${theme.ac}">{${i + 1}}</p>
-            <input type="text" class="n-subject font-mono text-[10px] font-bold uppercase tracking-[.06em] px-2 py-[3px] rounded-full outline-none w-auto max-w-[120px] truncate transition-colors duration-150 ${note.subject ? subjectPillClasses(note.subject) : 'bg-white/40 text-[#1E2126]/40 placeholder:text-[#1E2126]/40'}" placeholder="subject" value="${escapeHtml(note.subject || '')}" list="subjectList">
+        <div class="note-card relative rounded-[16px] overflow-hidden bg-white dark:bg-[#1E2126] shadow-[0_14px_30px_-16px_rgba(20,22,26,.35),0_2px_8px_rgba(20,22,26,.08)] transition-transform duration-[180ms] group-hover:shadow-[0_20px_40px_-16px_rgba(20,22,26,.42)] [transform:rotate(var(--rot))]">
+          <div class="h-[7px]" style="background:repeating-linear-gradient(135deg, ${theme.hex}, ${theme.hex} 8px, #1E2126 8px, #1E2126 16px);"></div>
+          <div class="flex">
+            <div class="flex-1 min-w-0 px-3.5 pt-3 pb-3">
+              <div class="flex items-center justify-between mb-2.5">
+                <span class="font-mono text-[9px] font-bold uppercase tracking-[.14em]" style="color:${theme.hex}">Note Pass</span>
+                <button class="note-del w-6 h-6 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center cursor-pointer opacity-0 scale-75 transition-all duration-150 group-hover:opacity-100 group-hover:scale-100 hover:bg-[#FCEAE7] dark:hover:bg-[#2A1E1E] text-[#8A8F98] dark:text-[#9AA3AE] hover:text-[#C13535]" title="Delete note">${TRASH_SVG}</button>
+              </div>
+              <input type="text" class="n-title bg-transparent outline-none font-extrabold text-[15px] leading-[1.25] mb-2.5 w-full text-[#1E2126] dark:text-[#E7E9EC] placeholder:text-[#1E2126]/35 dark:placeholder:text-[#E7E9EC]/35" placeholder="Note title" value="${escapeHtml(note.title)}">
+              <div class="grid grid-cols-2 gap-y-2 gap-x-2 mb-2.5">
+                <div class="min-w-0">
+                  <p class="bp-label mb-0.5 !text-[8px]">Subject</p>
+                  <input type="text" class="n-subject bp-value !font-mono text-[12px] bg-transparent outline-none w-full truncate text-[#1E2126] dark:text-[#E7E9EC] placeholder:text-[#B7BBC2] dark:placeholder:text-[#5B5F68] placeholder:font-semibold" placeholder="—" value="${escapeHtml(note.subject || '')}" list="subjectList">
+                </div>
+                <div class="min-w-0">
+                  <p class="bp-label mb-0.5 !text-[8px]">No.</p>
+                  <p class="bp-value text-[12px]">${String(i + 1).padStart(3,'0')}</p>
+                </div>
+              </div>
+              <textarea class="n-body bg-transparent outline-none text-[11.5px] leading-[1.5] text-[#1E2126]/70 dark:text-[#E7E9EC]/70 w-full resize-none placeholder:text-[#1E2126]/35 dark:placeholder:text-[#E7E9EC]/35" rows="3" placeholder="Write something...">${escapeHtml(note.body)}</textarea>
+            </div>
+            <div class="relative w-[30px] shrink-0 border-l-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] flex flex-col items-center justify-between py-4 px-1.5">
+              <div class="bp-notch-sm" style="top:-7px;"></div>
+              <div class="bp-notch-sm" style="top:auto; bottom:-7px;"></div>
+              <p class="font-mono text-[7.5px] font-bold uppercase tracking-[.1em] text-[#8A8F98] dark:text-[#9AA3AE] [writing-mode:vertical-rl] rotate-180">PurrfectPlanner</p>
+              <div class="flex items-stretch gap-[1.5px] h-[26px] w-full">${barcodeHtml}</div>
+            </div>
           </div>
-          <input type="text" class="n-title bg-transparent outline-none font-bold text-[15px] leading-[1.3] mb-2 w-full text-[#1E2126] placeholder:text-[#1E2126]/35" placeholder="Note title" value="${escapeHtml(note.title)}">
-          <textarea class="n-body bg-transparent outline-none text-[12.5px] leading-[1.5] text-[#1E2126]/70 w-full resize-none placeholder:text-[#1E2126]/35" rows="3" placeholder="Write something...">${escapeHtml(note.body)}</textarea>
-          <button class="note-rotate absolute -bottom-3 -right-3 w-7 h-7 rounded-full bg-white border-[1.5px] border-[#D7DBE1] text-[#8A8F98] flex items-center justify-center cursor-grab opacity-0 scale-75 transition-all duration-150 group-hover:opacity-100 group-hover:scale-100 hover:text-[#1E2126] hover:border-[#B7BBC2]" title="Drag to tilt">${ROTATE_SVG}</button>
+          <button class="note-rotate absolute -bottom-3 -right-3 w-7 h-7 rounded-full bg-white dark:bg-[#1E2126] border-[1.5px] border-[#D7DBE1] dark:border-[#33363D] text-[#8A8F98] dark:text-[#9AA3AE] flex items-center justify-center cursor-grab opacity-0 scale-75 transition-all duration-150 group-hover:opacity-100 group-hover:scale-100 hover:text-[#1E2126] dark:hover:text-[#E7E9EC] hover:border-[#B7BBC2] dark:hover:border-[#4A4E57]" title="Drag to tilt">${ROTATE_SVG}</button>
         </div>
       `;
 
@@ -2564,9 +3023,11 @@
       row.querySelector('.c-start').addEventListener('change', (e)=>{ c.start = e.target.value; saveClassSchedule(); queueSchedulePreview(); });
       row.querySelector('.c-end').addEventListener('change', (e)=>{ c.end = e.target.value; saveClassSchedule(); queueSchedulePreview(); });
       row.querySelector('.c-del').addEventListener('click', ()=>{
-        classSchedule = classSchedule.filter(x=>x.id!==id);
-        saveClassSchedule();
-        renderScheduleList();
+        confirmDelete('Delete this class?', c.subject ? `"${c.subject}" will be removed from your schedule.` : 'This class will be removed from your schedule.', ()=>{
+          classSchedule = classSchedule.filter(x=>x.id!==id);
+          saveClassSchedule();
+          renderScheduleList();
+        });
       });
       row.querySelectorAll('.c-mode-btn').forEach(modeBtn=>{
         modeBtn.addEventListener('click', ()=>{
@@ -2763,9 +3224,11 @@
       row.querySelector('.r-start').addEventListener('change', (e)=>{ r.start = e.target.value; saveRecurring(); });
       row.querySelector('.r-end').addEventListener('change', (e)=>{ r.end = e.target.value; saveRecurring(); });
       row.querySelector('.r-del').addEventListener('click', ()=>{
-        recurringTasks = recurringTasks.filter(x=>x.id!==id);
-        saveRecurring();
-        renderRecurringList();
+        confirmDelete('Delete this recurring task?', r.title ? `"${r.title}" will stop repeating and be removed.` : 'This recurring task will be removed.', ()=>{
+          recurringTasks = recurringTasks.filter(x=>x.id!==id);
+          saveRecurring();
+          renderRecurringList();
+        });
       });
       row.querySelectorAll('.r-day').forEach(dayBtn=>{
         dayBtn.addEventListener('click', ()=>{
@@ -4073,6 +4536,58 @@ function closeQuickActionsPopover(){
   document.getElementById('qaDarkBtn').addEventListener('click', toggleDarkMode);
   document.getElementById('qaFocusBtn').addEventListener('click', openFocusModal);
   document.getElementById('qaScheduleBtn').addEventListener('click', openScheduleModal);
+
+  // ================= Zen mode + hide side cards =================
+  (function setupZenAndHideCards(){
+    const ZEN_MODE_KEY = 'ticket_todo_zen_mode_v1';
+    const HIDE_SIDE_CARDS_KEY = 'ticket_todo_hide_side_cards_v1';
+
+    const floatingHeaderEl = document.getElementById('floatingHeader');
+    const miniCalCardEl = document.getElementById('miniCalCard');
+    const departureBoardCardEl = document.getElementById('departureBoardCard');
+    const qaZenBtn = document.getElementById('qaZenBtn');
+    const qaZenIconOn = document.getElementById('qaZenIconOn');
+    const qaZenIconOff = document.getElementById('qaZenIconOff');
+    const zenExitBtn = document.getElementById('zenExitBtn');
+    const qaHideCardsBtn = document.getElementById('qaHideCardsBtn');
+    const qaHideCardsLabel = qaHideCardsBtn.querySelector('.qa-hide-cards-label');
+
+    let zenMode = localStorage.getItem(ZEN_MODE_KEY) === '1';
+    let hideSideCards = localStorage.getItem(HIDE_SIDE_CARDS_KEY) === '1';
+
+    function applyZenMode(){
+      floatingHeaderEl.classList.toggle('hidden', zenMode);
+      qaZenBtn.classList.toggle('idle-active', zenMode);
+      qaZenIconOn.classList.toggle('hidden', zenMode);
+      qaZenIconOff.classList.toggle('hidden', !zenMode);
+      zenExitBtn.classList.toggle('hidden', !zenMode);
+      zenExitBtn.classList.toggle('flex', zenMode);
+    }
+    function applyHideSideCards(){
+      if(miniCalCardEl) miniCalCardEl.classList.toggle('hidden', hideSideCards);
+      if(departureBoardCardEl) departureBoardCardEl.classList.toggle('hidden', hideSideCards);
+      qaHideCardsLabel.textContent = hideSideCards ? 'Show side cards' : 'Hide side cards';
+    }
+
+    function toggleZenMode(){
+      zenMode = !zenMode;
+      localStorage.setItem(ZEN_MODE_KEY, zenMode ? '1' : '0');
+      applyZenMode();
+      showToast(zenMode ? 'Zen mode on — sidebar hidden.' : 'Zen mode off.');
+    }
+    qaZenBtn.addEventListener('click', toggleZenMode);
+    zenExitBtn.addEventListener('click', toggleZenMode);
+    qaHideCardsBtn.addEventListener('click', ()=>{
+      hideSideCards = !hideSideCards;
+      localStorage.setItem(HIDE_SIDE_CARDS_KEY, hideSideCards ? '1' : '0');
+      applyHideSideCards();
+      closeQuickActionsPopover();
+      showToast(hideSideCards ? 'Departure & calendar cards hidden.' : 'Departure & calendar cards shown.');
+    });
+
+    applyZenMode();
+    applyHideSideCards();
+  })();
   document.getElementById('qaReminderBtn').addEventListener('click', ()=>{ toggleReminders(); closeQuickActionsPopover(); });
   document.getElementById('qaShareCardBtn').addEventListener('click', openShareCard);
   document.getElementById('qaShareBtn').addEventListener('click', openShareModal);
@@ -4325,6 +4840,7 @@ function makeDraggable(id,key){
 document.addEventListener('DOMContentLoaded',()=>{
  makeDraggable('floatingHeader','drag_floatingHeader');
  makeDraggable('miniCalCard','drag_miniCalCard');
+ makeDraggable('departureBoardCard','drag_departureBoardCard');
  window.resetCardPositions=function(){
    document.getElementById('floatingHeader')?.resetPosition();
    document.getElementById('miniCalCard')?.resetPosition();
@@ -4339,9 +4855,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 function resetCardPositions() {
   localStorage.removeItem('floatingHeaderPos');
   localStorage.removeItem('miniCalCardPos');
+  localStorage.removeItem('drag_departureBoardCard');
 
   const floatingHeader = document.getElementById('floatingHeader');
   const miniCalCard = document.getElementById('miniCalCard');
+  const departureBoardCard = document.getElementById('departureBoardCard');
 
   if (floatingHeader) {
     floatingHeader.style.transform = '';
@@ -4355,6 +4873,12 @@ function resetCardPositions() {
     miniCalCard.style.top = '';
   }
 
+  if (departureBoardCard) {
+    departureBoardCard.style.transform = '';
+    departureBoardCard.style.left = '';
+    departureBoardCard.style.top = '';
+  }
+
   location.reload();
 }
 
@@ -4362,6 +4886,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('menuResetLayoutBtn')?.addEventListener('click', resetCardPositions);
 });
 </script>
+
 
 </body>
 </html>

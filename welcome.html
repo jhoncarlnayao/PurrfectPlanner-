@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PurrfectPlanner</title>
+<link rel="icon" href="assets/icon2.png">
+<link rel="apple-touch-icon" href="assets/icon2.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PurrfectPlanner">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: { extend: { fontFamily: { sans: ['Inter','system-ui','sans-serif'], mono: ['JetBrains Mono','monospace'] } } }
+  }
+</script>
+<style>
+  .bp-label { font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#8A8F98; }
+  .bp-value { font-family:'JetBrains Mono',monospace; font-weight:800; letter-spacing:.01em; }
+  .bp-notch-sm { position:absolute; width:14px; height:14px; background:#EDEFF2; border-radius:50%; left:-7px; }
+  .dark .bp-notch-sm { background:#15171B; }
+  .feature-card { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; cursor: pointer; }
+  .feature-card:hover { transform: translateY(-2px); box-shadow: 0 20px 40px -18px rgba(20,22,26,.22); }
+  .feature-card.is-active { border-color: #3A67D8 !important; box-shadow: 0 20px 40px -18px rgba(58,103,216,.35); }
+  .feature-card.is-active .fc-icon { transform: scale(1.08); }
+  .fc-icon { transition: transform .18s ease; }
+
+  /* Boarding pass flip */
+  .bp-scene { perspective: 1400px; }
+  .bp-card { position: relative; transition: transform .7s cubic-bezier(.2,.8,.2,1); transform-style: preserve-3d; }
+  .bp-card.is-flipped { transform: rotateY(180deg); }
+  .bp-face { backface-visibility: hidden; }
+  .bp-face-back { position: absolute; inset: 0; transform: rotateY(180deg); }
+  .bp-hint { animation: bpPulse 2.4s ease-in-out infinite; }
+  @keyframes bpPulse { 0%,100%{opacity:.55} 50%{opacity:1} }
+
+  /* Punch holes */
+  .punch { width: 15px; height: 15px; border-radius: 50%; background: #EDEFF2; transition: background .25s ease, transform .2s ease; }
+  .dark .punch { background:#15171B; }
+  .punch.lit { background: #3A67D8; transform: scale(1.06); }
+
+  /* Demo panel */
+  #demoPanel { transition: opacity .2s ease; }
+  .demo-enter { animation: demoFade .25s ease; }
+  @keyframes demoFade { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .sticky-demo-note { cursor: grab; touch-action: none; }
+  .sticky-demo-note:active { cursor: grabbing; }
+
+  .demo-btn { transition: transform .12s ease, opacity .12s ease; }
+  .demo-btn:active { transform: scale(.94); }
+
+  /* ===== Departure board / split-flap counters (from main app) ===== */
+  .dboard { display:flex; gap:6px; align-items:stretch; }
+  .dboard-cell { background:#1E2126; border-radius:4px; padding:2px 3px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 2px 4px rgba(0,0,0,.25); }
+  .dark .dboard-cell { background:#0C0D0F; }
+  .dboard-flap { position:relative; width:15px; height:22px; background:#2A2D33; border-radius:2px; overflow:hidden; }
+  .dboard-flap span { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-weight:800; font-size:13px; color:#F4C542; }
+  .dboard-flap::after { content:''; position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(0,0,0,.45); z-index:2; }
+  .dboard-flap.flipping span { animation: flapFlip .28s ease-in-out; }
+  @keyframes flapFlip { 0%{transform:rotateX(0deg);} 50%{transform:rotateX(-90deg);} 51%{transform:rotateX(90deg);} 100%{transform:rotateX(0deg);} }
+  .dboard-label { font-family:'JetBrains Mono',monospace; font-size:8.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#8A8F98; margin-top:4px; text-align:center; }
+  .dboard-lg .dboard-flap { width:20px; height:30px; }
+  .dboard-lg .dboard-flap span { font-size:18px; }
+
+  /* ===== Ticket-stub punch calendar (from main app) ===== */
+  .stub-grid { display:grid; grid-template-columns: repeat(7,1fr); gap:5px; }
+  .stub-cell { aspect-ratio:1; border-radius:4px; position:relative; background:#EDEFF2; border:1.5px dashed #D7DBE1; cursor:pointer; }
+  .dark .stub-cell { background:#26282D; border-color:#33363D; }
+  .stub-cell.punched { background:#3A67D8; border-style:solid; border-color:#3A67D8; }
+  .stub-cell.punched::after { content:''; position:absolute; inset:0; margin:auto; width:40%; height:40%; background:#fff; border-radius:50%; box-shadow: inset 0 1px 2px rgba(0,0,0,.25); }
+  .stub-cell.today { box-shadow: 0 0 0 2px #D9932A; }
+
+  /* ===== Ticket task card (from main app) ===== */
+  .demo-ticket-shadow { position:absolute; inset:0; transform:translate(5px,6px) rotate(1deg); }
+</style>
+</head>
+<body class="bg-[#EDEFF2] dark:bg-[#15171B] font-sans text-[#1E2126] dark:text-[#E7E9EC] min-h-screen [background-image:linear-gradient(to_right,rgba(148,152,158,.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,152,158,.12)_1px,transparent_1px)] dark:[background-image:linear-gradient(to_right,rgba(255,255,255,.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,.06)_1px,transparent_1px)] [background-size:80px_80px] transition-colors duration-200">
+
+<button id="darkToggleBtn" title="Toggle dark mode" class="fixed top-5 right-5 w-9 h-9 rounded-full bg-white dark:bg-[#1E2126] border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shadow-[0_4px_14px_-6px_rgba(0,0,0,.2)] z-10">
+  <svg id="darkIconMoon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  <svg id="darkIconSun" class="hidden" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+</button>
+
+<div class="max-w-[1040px] mx-auto px-5 py-16">
+
+  <div class="text-center mb-10">
+    <p class="font-mono text-[11px] font-bold uppercase tracking-[.16em] text-[#3A67D8] mb-3">✈ Now boarding</p>
+    <h1 class="text-[34px] sm:text-[40px] font-extrabold tracking-[-0.02em] leading-[1.05] mb-3">Welcome to<br>PurrfectPlanner</h1>
+    <p class="text-[14.5px] text-[#8A8F98] dark:text-[#9AA3AE] max-w-[460px] mx-auto leading-relaxed">Your to-do list, reimagined as a little travel gate. Every task is a ticket, every day is a stamp, and every streak is a journey. Here's what's on board.</p>
+  </div>
+
+  <!-- Hero boarding pass mockup (click to flip) -->
+  <div class="bp-scene mb-3 max-w-[460px] mx-auto">
+    <div id="bpCard" class="bp-card relative rounded-[22px] shadow-[0_1px_2px_rgba(20,22,26,.04),0_20px_40px_-20px_rgba(20,22,26,.2)]">
+
+      <!-- FRONT -->
+      <div class="bp-face rounded-[22px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] overflow-hidden bg-white dark:bg-[#1E2126]">
+        <div class="h-[8px]" style="background: repeating-linear-gradient(135deg, #3A67D8, #3A67D8 10px, #1E2126 10px, #1E2126 20px);"></div>
+        <div class="flex">
+          <div class="flex-1 min-w-0 px-6 py-5">
+            <p class="font-mono text-[10px] font-bold uppercase tracking-[.16em] text-[#3A67D8] mb-3">Boarding Pass</p>
+            <p class="font-extrabold text-[19px] leading-tight mb-4">Your day, ticketed.</p>
+            <div class="grid grid-cols-2 gap-y-3 gap-x-3">
+              <div><p class="bp-label mb-0.5">Gate</p><p class="bp-value text-[14px]">Focus</p></div>
+              <div><p class="bp-label mb-0.5">Seat</p><p class="bp-value text-[14px]">3A</p></div>
+              <div><p class="bp-label mb-0.5">Date</p><p class="bp-value text-[14px]">Today</p></div>
+              <div><p class="bp-label mb-0.5">Status</p><p class="bp-value text-[14px] text-[#479456]">Boarding</p></div>
+            </div>
+          </div>
+          <div class="relative w-[70px] shrink-0 border-l-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] flex flex-col items-center justify-between py-5 px-2">
+            <div class="bp-notch-sm" style="top:-7px;"></div>
+            <div class="bp-notch-sm" style="top:auto; bottom:-7px;"></div>
+            <p class="font-mono text-[8.5px] font-bold uppercase tracking-[.1em] text-[#8A8F98] dark:text-[#9AA3AE] [writing-mode:vertical-rl] rotate-180">PurrfectPlanner</p>
+            <div class="flex items-stretch gap-[1.5px] h-[60px] w-full">
+              <span style="width:20%;background:#1E2126;" class="block dark:bg-[#E7E9EC]"></span>
+              <span style="width:10%;background:#1E2126;" class="block dark:bg-[#E7E9EC]"></span>
+              <span style="width:16%;background:#1E2126;" class="block dark:bg-[#E7E9EC]"></span>
+              <span style="width:8%;background:#1E2126;" class="block dark:bg-[#E7E9EC]"></span>
+              <span style="width:18%;background:#1E2126;" class="block dark:bg-[#E7E9EC]"></span>
+              <span style="width:12%;background:#1E2126;" class="block dark:bg-[#E7E9EC]"></span>
+              <span style="width:14%;background:#1E2126;" class="block dark:bg-[#E7E9EC]"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BACK: ticket-stub streak punch card -->
+      <div class="bp-face bp-face-back rounded-[22px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] overflow-hidden bg-white dark:bg-[#1E2126] flex flex-col">
+        <div class="h-[8px]" style="background: repeating-linear-gradient(135deg, #3A67D8, #3A67D8 10px, #1E2126 10px, #1E2126 20px);"></div>
+        <div class="flex-1 px-6 py-5">
+          <p class="font-mono text-[10px] font-bold uppercase tracking-[.16em] text-[#3A67D8] mb-3">Streak stub</p>
+          <p class="font-extrabold text-[19px] leading-tight mb-1">7-day punch card</p>
+          <p class="text-[12px] text-[#8A8F98] dark:text-[#9AA3AE] mb-4">Punch today's hole to keep the streak going.</p>
+          <div class="flex items-center gap-2.5 mb-4" id="punchRow">
+            <button data-punch="0" class="punch"></button>
+            <button data-punch="1" class="punch"></button>
+            <button data-punch="2" class="punch"></button>
+            <button data-punch="3" class="punch"></button>
+            <button data-punch="4" class="punch"></button>
+            <button data-punch="5" class="punch"></button>
+            <button data-punch="6" class="punch"></button>
+          </div>
+          <p class="font-mono text-[11px]"><span class="text-[#8A8F98] dark:text-[#9AA3AE]">Streak — </span><span id="streakCount" class="bp-value text-[#3A67D8]">0</span><span class="text-[#8A8F98] dark:text-[#9AA3AE]"> days</span></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <p class="text-center bp-hint font-mono text-[10px] uppercase tracking-[.12em] text-[#8A8F98] dark:text-[#9AA3AE] mb-12">tap the ticket to flip it →</p>
+
+  <div class="lg:grid lg:grid-cols-[1fr_440px] lg:gap-6 lg:items-start mb-12">
+
+  <div class="grid sm:grid-cols-2 gap-4">
+
+    <div data-demo="tasks" class="feature-card bg-white dark:bg-[#1E2126] rounded-[20px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] p-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)]">
+      <div class="fc-icon w-10 h-10 rounded-full bg-[#EAF0FD] dark:bg-[#1B2440] flex items-center justify-center text-[#3A67D8] mb-3">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18" stroke-dasharray="2 2"/></svg>
+      </div>
+      <p class="font-bold text-[14.5px] mb-1">Boarding-pass tasks</p>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed">Every task is its own ticket — subject, time, and status, stamped "boarding" when it's done.</p>
+    </div>
+
+    <div data-demo="calendar" class="feature-card bg-white dark:bg-[#1E2126] rounded-[20px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] p-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)]">
+      <div class="fc-icon w-10 h-10 rounded-full bg-[#FCEFE0] dark:bg-[#332411] flex items-center justify-center text-[#D9932A] mb-3">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18"/><path d="M8 3v4M16 3v4"/></svg>
+      </div>
+      <p class="font-bold text-[14.5px] mb-1">Ticket-stub calendar &amp; streaks</p>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed">Punch a hole for every day you clear your tasks, and keep your streak alive.</p>
+    </div>
+
+    <div data-demo="departure" class="feature-card bg-white dark:bg-[#1E2126] rounded-[20px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] p-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)]">
+      <div class="fc-icon w-10 h-10 rounded-full bg-[#E7F4E9] dark:bg-[#132417] flex items-center justify-center text-[#479456] mb-3">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+      </div>
+      <p class="font-bold text-[14.5px] mb-1">Departure board</p>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed">A flip-clock style counter that tracks your remaining tasks and streak at a glance.</p>
+    </div>
+
+    <div data-demo="sticky" class="feature-card bg-white dark:bg-[#1E2126] rounded-[20px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] p-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)]">
+      <div class="fc-icon w-10 h-10 rounded-full bg-[#FCEAE7] dark:bg-[#2A1E1E] flex items-center justify-center text-[#C13535] mb-3">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      </div>
+      <p class="font-bold text-[14.5px] mb-1">Sticky notes</p>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed">Drop free-form notes styled like little tickets — drag them anywhere and tilt them to taste.</p>
+    </div>
+
+    <div data-demo="timer" class="feature-card bg-white dark:bg-[#1E2126] rounded-[20px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] p-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)]">
+      <div class="fc-icon w-10 h-10 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] mb-3">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      </div>
+      <p class="font-bold text-[14.5px] mb-1">Cat Nap Focus timer</p>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed">A gentle pomodoro-style timer to help you focus, right from the quick action bar.</p>
+    </div>
+
+    <div data-demo="zen" class="feature-card bg-white dark:bg-[#1E2126] rounded-[20px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] p-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)]">
+      <div class="fc-icon w-10 h-10 rounded-full bg-[#EAF0FD] dark:bg-[#1B2440] flex items-center justify-center text-[#3A67D8] mb-3">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+      <p class="font-bold text-[14.5px] mb-1">Zen mode</p>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed">Hide the whole sidebar with one tap for a clean, distraction-free view — undo anytime with the floating button.</p>
+    </div>
+
+    <div class="feature-card bg-white dark:bg-[#1E2126] rounded-[20px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] p-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)] sm:col-span-2 cursor-default">
+      <div class="w-10 h-10 rounded-full bg-[#FCEFE0] dark:bg-[#332411] flex items-center justify-center text-[#D9932A] mb-3">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+      </div>
+      <p class="font-bold text-[14.5px] mb-1">Dark mode &amp; backups</p>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed">Toggle dark mode, export/import a full backup, or clear your data — all from the profile menu.</p>
+    </div>
+
+    <div data-demo="search" class="feature-card bg-white dark:bg-[#1E2126] rounded-[20px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] p-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)]">
+      <div class="fc-icon w-10 h-10 rounded-full bg-[#EFEAFB] dark:bg-[#241C3A] flex items-center justify-center text-[#7B57D6] mb-3">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </div>
+      <p class="font-bold text-[14.5px] mb-1">Instant search</p>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed">Search your tickets by title or subject and narrow the list as you type.</p>
+    </div>
+
+    <div data-demo="subtasks" class="feature-card bg-white dark:bg-[#1E2126] rounded-[20px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] p-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)]">
+      <div class="fc-icon w-10 h-10 rounded-full bg-[#DFF1F5] dark:bg-[#132B31] flex items-center justify-center text-[#2F8FA6] mb-3">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <p class="font-bold text-[14.5px] mb-1">Subtasks &amp; progress</p>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed">Break a ticket into steps and watch its progress badge fill in as you check them off.</p>
+    </div>
+
+    <div data-demo="recurring" class="feature-card bg-white dark:bg-[#1E2126] rounded-[20px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] p-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)]">
+      <div class="fc-icon w-10 h-10 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] mb-3">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3.3-6.98"/><path d="M21 3v6h-6"/></svg>
+      </div>
+      <p class="font-bold text-[14.5px] mb-1">Recurring &amp; class schedule</p>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed">Set a task to repeat, or generate a week of tickets straight from your class schedule.</p>
+    </div>
+
+    <div data-demo="sharecard" class="feature-card bg-white dark:bg-[#1E2126] rounded-[20px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] p-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_14px_28px_-16px_rgba(20,22,26,.16)] sm:col-span-2">
+      <div class="fc-icon w-10 h-10 rounded-full bg-[#FAE6EF] dark:bg-[#2A1522] flex items-center justify-center text-[#C13575] mb-3">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 3.9M15.4 6.5L8.6 10.4"/></svg>
+      </div>
+      <p class="font-bold text-[14.5px] mb-1">Share your streak card</p>
+      <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed">Turn your streak and open tasks into a downloadable, shareable card — no account needed.</p>
+    </div>
+
+  </div>
+
+  <!-- Live demo panel, driven by the feature cards above. Sticks in view on desktop while browsing cards. -->
+  <div class="lg:sticky lg:top-6 mt-4 lg:mt-0">
+    <div class="rounded-[24px] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] bg-white dark:bg-[#1E2126] p-7 min-h-[280px] lg:min-h-[380px] flex flex-col justify-center">
+      <p class="bp-label mb-4">Try it — <span id="demoLabel">boarding-pass tasks</span></p>
+      <div id="demoPanel"></div>
+    </div>
+  </div>
+
+  </div>
+
+  <div class="text-center">
+    <a href="index.html" class="inline-flex items-center gap-2 border-none rounded-xl px-6 py-3.5 font-bold text-sm cursor-pointer font-sans bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] hover:opacity-[.88] transition-opacity shadow-[0_14px_30px_-14px_rgba(0,0,0,.4)]">
+      Open PurrfectPlanner
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+    <p class="mt-4 text-[11.5px] text-[#B7BBC2] dark:text-[#5B5F68]">You can always reopen this tour from the profile menu inside the app.</p>
+  </div>
+
+</div>
+
+<script>
+  const darkToggleBtn = document.getElementById('darkToggleBtn');
+  const darkIconMoon = document.getElementById('darkIconMoon');
+  const darkIconSun = document.getElementById('darkIconSun');
+  const DARK_KEY = 'ticket_todo_dark_mode_v1';
+  function applyDark(on){
+    document.documentElement.classList.toggle('dark', on);
+    darkIconMoon.classList.toggle('hidden', on);
+    darkIconSun.classList.toggle('hidden', !on);
+  }
+  applyDark(localStorage.getItem(DARK_KEY) === '1');
+  darkToggleBtn.addEventListener('click', ()=>{
+    const on = !document.documentElement.classList.contains('dark');
+    localStorage.setItem(DARK_KEY, on ? '1' : '0');
+    applyDark(on);
+  });
+
+  /* ---------- Boarding pass flip + punch streak ---------- */
+  const bpCard = document.getElementById('bpCard');
+  const bpScene = document.querySelector('.bp-scene');
+  const streakCountEl = document.getElementById('streakCount');
+  let punched = [true, true, true, false, false, false, false];
+
+  function renderPunches(){
+    document.querySelectorAll('.punch').forEach(btn=>{
+      const i = Number(btn.dataset.punch);
+      btn.classList.toggle('lit', !!punched[i]);
+    });
+    let streak = 0;
+    for (let i = punched.length - 1; i >= 0; i--){ if (punched[i]) streak++; else break; }
+    streakCountEl.textContent = streak;
+  }
+
+  bpScene.addEventListener('click', (e)=>{
+    if (e.target.closest('.punch')) return; // let punch clicks flip only via card tap elsewhere
+    bpCard.classList.toggle('is-flipped');
+  });
+  document.querySelectorAll('.punch').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const i = Number(btn.dataset.punch);
+      punched[i] = !punched[i];
+      renderPunches();
+    });
+  });
+  renderPunches();
+
+  /* ---------- Feature card demo tabs ---------- */
+  const demoLabel = document.getElementById('demoLabel');
+  const demoPanel = document.getElementById('demoPanel');
+  const cards = document.querySelectorAll('.feature-card[data-demo]');
+  const labels = {
+    tasks: 'boarding-pass tasks',
+    calendar: 'ticket-stub calendar & streaks',
+    departure: 'departure board',
+    sticky: 'sticky notes',
+    timer: 'cat nap focus timer',
+    zen: 'zen mode',
+    search: 'instant search',
+    subtasks: 'subtasks & progress',
+    recurring: 'recurring & class schedule',
+    sharecard: 'share your streak card'
+  };
+
+  function setActive(demo){
+    cards.forEach(c => c.classList.toggle('is-active', c.dataset.demo === demo));
+    demoLabel.textContent = labels[demo];
+    demoPanel.innerHTML = '';
+    demoPanel.classList.remove('demo-enter');
+    void demoPanel.offsetWidth;
+    demoPanel.classList.add('demo-enter');
+    renderDemo(demo);
+  }
+
+  cards.forEach(card=>{
+    card.addEventListener('click', ()=> setActive(card.dataset.demo));
+  });
+
+  let timerInterval = null;
+  function clearTimerInterval(){ if (timerInterval){ clearInterval(timerInterval); timerInterval = null; } }
+
+  function renderDemo(demo){
+    clearTimerInterval();
+    if (demo === 'tasks'){
+      demoPanel.innerHTML = `
+        <div class="relative cursor-pointer group max-w-[380px]" id="taskTicket" style="--tilt:-0.6deg">
+          <div class="demo-ticket-shadow bg-white dark:bg-[#1E2126] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] rounded-[22px]"></div>
+          <div class="relative z-10 bg-white dark:bg-[#1E2126] border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] rounded-[22px] px-5 pt-4 pb-5 shadow-[0_1px_2px_rgba(20,22,26,.04),0_10px_24px_-12px_rgba(20,22,26,.12)] [transform:rotate(var(--tilt))] transition-transform duration-200 group-hover:[transform:rotate(calc(var(--tilt)_-_1deg))_translateY(-2px)]">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b-[1.5px] border-dashed border-[#D7DBE1] dark:border-[#33363D] text-[12px] tracking-[.04em]">
+              <span class="text-[#B7BBC2] dark:text-[#5B5F68] font-medium uppercase">Today</span>
+              <span class="text-[#B7BBC2] dark:text-[#5B5F68] font-semibold uppercase">Jul 30</span>
+            </div>
+            <div class="relative flex items-start justify-between gap-3 rounded-[14px] px-4 py-3.5 bg-[#FCEAE7]">
+              <button id="taskCheck" class="mt-0.5 w-[21px] h-[21px] rounded-full border-2 border-[#1E2126]/25 flex items-center justify-center shrink-0 transition-colors duration-150">
+                <svg class="hidden" id="taskCheckIcon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="white" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+              </button>
+              <div class="flex-1 min-w-0">
+                <span class="font-mono text-[10px] font-bold uppercase tracking-[.06em] px-2 py-[3px] rounded-full whitespace-nowrap mb-2 inline-block bg-[#DD5B44]/15 text-[#DD5B44]">Bantay</span>
+                <p id="taskLabel" class="font-bold text-[16px] mb-1 leading-[1.25] text-[#1E2126]">Draft the reports page</p>
+                <p class="text-[12.5px] font-medium opacity-85 text-[#1E2126]">2:00 PM – 3:00 PM</p>
+              </div>
+              <span class="font-mono text-[11.5px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap bg-[#DD5B44]/15 text-[#DD5B44]">1h</span>
+            </div>
+          </div>
+        </div>
+        <p class="text-[12px] text-[#8A8F98] dark:text-[#9AA3AE] mt-4">Tap the circle to check it in.</p>`;
+      const btn = demoPanel.querySelector('#taskCheck');
+      const icon = demoPanel.querySelector('#taskCheckIcon');
+      const label = demoPanel.querySelector('#taskLabel');
+      btn.addEventListener('click', ()=>{
+        const done = icon.classList.toggle('hidden') === false;
+        btn.classList.toggle('bg-[#479456]', done);
+        btn.classList.toggle('border-[#479456]', done);
+        label.classList.toggle('line-through', done);
+        demoPanel.querySelector('#taskTicket').classList.toggle('opacity-60', done);
+      });
+    } else if (demo === 'calendar'){
+      const days = ['M','T','W','T','F','S','S'];
+      demoPanel.innerHTML = `
+        <div class="stub-grid max-w-[360px] mb-4">
+          ${days.map((d,i)=>`<div class="flex flex-col items-center gap-1.5"><span class="font-mono text-[10px] text-[#8A8F98] dark:text-[#9AA3AE]">${d}</span><button data-d="${i}" class="stub-cell w-full"></button></div>`).join('')}
+        </div>
+        <p class="font-mono text-[12.5px]"><span class="text-[#8A8F98] dark:text-[#9AA3AE]">Streak — </span><span id="calStreak" class="bp-value text-[#3A67D8]">0</span><span class="text-[#8A8F98] dark:text-[#9AA3AE]"> days</span></p>`;
+      const state = [true,true,true,true,false,false,false];
+      const todayIdx = 3;
+      function draw(){
+        demoPanel.querySelectorAll('.stub-cell').forEach((cell,i)=>{
+          cell.classList.toggle('punched', state[i]);
+          cell.classList.toggle('today', i === todayIdx);
+        });
+        let s = 0; for (let i=state.length-1;i>=0;i--){ if (state[i]) s++; else break; }
+        demoPanel.querySelector('#calStreak').textContent = s;
+      }
+      demoPanel.querySelectorAll('.stub-cell').forEach(btn=>{
+        btn.addEventListener('click', ()=>{ const i = Number(btn.dataset.d); state[i] = !state[i]; draw(); });
+      });
+      draw();
+    } else if (demo === 'departure'){
+      demoPanel.innerHTML = `
+        <div class="flex items-center justify-between mb-3.5 max-w-[380px]">
+          <p class="font-mono text-[11.5px] font-bold uppercase tracking-[.1em] text-[#8A8F98] dark:text-[#9AA3AE]">Departures</p>
+        </div>
+        <div class="flex items-start gap-6 mb-4">
+          <div><div class="dboard dboard-lg" id="depTasksBoard"></div><p class="dboard-label">Tasks</p></div>
+          <div><div class="dboard dboard-lg" id="depStreakBoard"></div><p class="dboard-label">Streak</p></div>
+        </div>
+        <div class="flex gap-2">
+          <button id="depClear" class="demo-btn font-mono text-[11px] font-bold uppercase tracking-[.1em] px-3.5 py-2 rounded-full bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B]">Clear a ticket</button>
+          <button id="depReset" class="demo-btn font-mono text-[11px] font-bold uppercase tracking-[.1em] px-3.5 py-2 rounded-full border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D]">Reset</button>
+        </div>`;
+      let tasks = 4, streak = 6;
+      function renderBoard(el, value){
+        const digits = String(value).padStart(2,'0').split('');
+        el.innerHTML = digits.map(d=>`<div class="dboard-cell"><div class="dboard-flap"><span>${d}</span></div></div>`).join('');
+      }
+      function flipBoard(el, value){
+        el.querySelectorAll('.dboard-flap').forEach(f=> f.classList.add('flipping'));
+        setTimeout(()=>{
+          renderBoard(el, value);
+        }, 140);
+        setTimeout(()=>{
+          el.querySelectorAll('.dboard-flap').forEach(f=> f.classList.remove('flipping'));
+        }, 280);
+      }
+      const tBoard = demoPanel.querySelector('#depTasksBoard');
+      const sBoard = demoPanel.querySelector('#depStreakBoard');
+      renderBoard(tBoard, tasks);
+      renderBoard(sBoard, streak);
+      demoPanel.querySelector('#depClear').addEventListener('click', ()=>{
+        if (tasks > 0) tasks--;
+        if (tasks === 0) streak++;
+        flipBoard(tBoard, tasks);
+        flipBoard(sBoard, streak);
+      });
+      demoPanel.querySelector('#depReset').addEventListener('click', ()=>{
+        tasks = 4; streak = 6;
+        flipBoard(tBoard, tasks);
+        flipBoard(sBoard, streak);
+      });
+    } else if (demo === 'sticky'){
+      const NOTE_THEMES = [
+        { hex:'#7C8A3C', bg:'#EEF1DA' },
+        { hex:'#2F8FA6', bg:'#DFF1F5' }
+      ];
+      const notesData = [
+        { subject: 'Errand', no: '001', text: 'Feed the cats before 6pm', rot: -6, theme: NOTE_THEMES[0] },
+        { subject: 'Idea', no: '002', text: 'Sketch the Iskolar route icons', rot: 4, theme: NOTE_THEMES[1] }
+      ];
+      const panelW = 380, panelH = 230, noteW = 170, noteH = 115;
+      const barWidths = [10,4,7,3,9,5,3,8,4,6];
+      function randomSpot(){
+        const x = 10 + Math.random() * (panelW - noteW - 20);
+        const y = 10 + Math.random() * (panelH - noteH - 20);
+        return { x, y };
+      }
+      demoPanel.innerHTML = `
+        <div class="relative rounded-xl bg-[#F7F8F9] dark:bg-[#191B20] overflow-hidden" style="height:${panelH}px;">
+          ${notesData.map((n,i)=>{
+            const pos = randomSpot();
+            const barcode = barWidths.map(w=>`<span style="width:${w}%;background:${n.theme.hex};" class="block"></span>`).join('');
+            return `
+            <div data-note="${i}" class="sticky-demo-note absolute w-[170px] rounded-[14px] bg-white dark:bg-[#1E2126] shadow-[0_14px_28px_-14px_rgba(20,22,26,.35)] overflow-hidden" style="left:${pos.x}px; top:${pos.y}px; transform:rotate(${n.rot}deg);">
+              <div class="h-[7px]" style="background: repeating-linear-gradient(135deg, ${n.theme.hex}, ${n.theme.hex} 6px, #1E2126 6px, #1E2126 12px);"></div>
+              <div class="flex">
+                <div class="flex-1 min-w-0 px-3 py-2.5" style="background:${n.theme.bg}22;">
+                  <p class="font-mono text-[8px] font-bold uppercase tracking-[.12em] mb-1.5" style="color:${n.theme.hex}">Note Pass</p>
+                  <p class="font-bold text-[12px] leading-tight mb-1.5">${n.text}</p>
+                  <div class="flex items-center justify-between">
+                    <div><p class="font-mono text-[6.5px] font-bold uppercase tracking-[.1em] text-[#B7BBC2] dark:text-[#5B5F68]">Subject</p><p class="font-mono text-[9px] font-semibold text-[#8A8F98] dark:text-[#9AA3AE]">${n.subject}</p></div>
+                    <div><p class="font-mono text-[6.5px] font-bold uppercase tracking-[.1em] text-[#B7BBC2] dark:text-[#5B5F68]">No.</p><p class="font-mono text-[9px] font-bold">${n.no}</p></div>
+                  </div>
+                </div>
+                <div class="relative w-[18px] shrink-0 border-l border-dashed border-[#D7DBE1] dark:border-[#33363D] flex flex-col items-center justify-between py-1.5">
+                  <p class="font-mono text-[5px] font-bold uppercase tracking-[.1em] text-[#B7BBC2] dark:text-[#5B5F68] [writing-mode:vertical-rl] rotate-180">PURRFECTPLANNER</p>
+                  <div class="flex items-stretch gap-[1px] h-[16px] w-full">${barcode}</div>
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
+          <p class="absolute bottom-2 right-3 font-mono text-[9px] text-[#B7BBC2] dark:text-[#5B5F68]">drag me</p>
+        </div>`;
+      const bounds = demoPanel.querySelector('.relative');
+      demoPanel.querySelectorAll('.sticky-demo-note').forEach(note=>{
+        let dragging = false, offX = 0, offY = 0;
+        const startDrag = (x,y)=>{
+          dragging = true;
+          const r = note.getBoundingClientRect();
+          offX = x - r.left; offY = y - r.top;
+          note.style.transition = 'none';
+          note.style.transform = 'rotate(0deg)';
+          note.style.zIndex = 5;
+        };
+        const moveDrag = (x,y)=>{
+          if (!dragging) return;
+          const br = bounds.getBoundingClientRect();
+          let nx = x - br.left - offX;
+          let ny = y - br.top - offY;
+          nx = Math.max(0, Math.min(nx, br.width - note.offsetWidth));
+          ny = Math.max(0, Math.min(ny, br.height - note.offsetHeight));
+          note.style.left = nx + 'px';
+          note.style.top = ny + 'px';
+        };
+        const endDrag = ()=>{ dragging = false; note.style.transition = ''; };
+        note.addEventListener('mousedown', e=> startDrag(e.clientX, e.clientY));
+        window.addEventListener('mousemove', e=> moveDrag(e.clientX, e.clientY));
+        window.addEventListener('mouseup', endDrag);
+        note.addEventListener('touchstart', e=>{ const t=e.touches[0]; startDrag(t.clientX,t.clientY); }, {passive:true});
+        window.addEventListener('touchmove', e=>{ const t=e.touches[0]; moveDrag(t.clientX,t.clientY); }, {passive:true});
+        window.addEventListener('touchend', endDrag);
+      });
+    } else if (demo === 'timer'){
+      demoPanel.innerHTML = `
+        <div class="max-w-[380px]">
+          <h2 class="text-[18px] font-extrabold tracking-[-0.01em] mb-1.5">Cat Nap Focus</h2>
+          <p class="font-mono text-[10px] font-bold uppercase tracking-[.16em] text-[#3A67D8] mb-4">✈ Now boarding</p>
+          <div class="flex items-center justify-center gap-4 mb-4">
+            <p class="text-[46px] font-extrabold font-mono tracking-tight" id="timerDisplay">25:00</p>
+          </div>
+          <div class="flex items-center justify-center gap-2 mb-4">
+            <button data-mins="15" class="timer-preset font-mono text-[11px] font-bold px-3 py-1.5 rounded-full border-[1.5px] border-[#D7DBE1] dark:border-[#33363D] text-[#8A8F98] dark:text-[#9AA3AE]">15m</button>
+            <button data-mins="25" class="timer-preset font-mono text-[11px] font-bold px-3 py-1.5 rounded-full border-[1.5px] border-[#1E2126] dark:border-[#E7E9EC] bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B]">25m</button>
+            <button data-mins="45" class="timer-preset font-mono text-[11px] font-bold px-3 py-1.5 rounded-full border-[1.5px] border-[#D7DBE1] dark:border-[#33363D] text-[#8A8F98] dark:text-[#9AA3AE]">45m</button>
+          </div>
+          <div class="flex gap-2.5 justify-center">
+            <button id="timerToggle" class="demo-btn font-mono text-[11px] font-bold uppercase tracking-[.1em] px-5 py-2 rounded-full bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B]">Start purring</button>
+            <button id="timerReset" class="demo-btn font-mono text-[11px] font-bold uppercase tracking-[.1em] px-4 py-2 rounded-full border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D]">Reset</button>
+          </div>
+        </div>`;
+      let mins = 25, seconds = mins * 60, running = false;
+      const display = demoPanel.querySelector('#timerDisplay');
+      const toggleBtn = demoPanel.querySelector('#timerToggle');
+      const presets = demoPanel.querySelectorAll('.timer-preset');
+      function draw(){
+        const m = String(Math.floor(seconds/60)).padStart(2,'0');
+        const s = String(seconds%60).padStart(2,'0');
+        display.textContent = `${m}:${s}`;
+      }
+      presets.forEach(p=>{
+        p.addEventListener('click', ()=>{
+          if (running) return;
+          mins = Number(p.dataset.mins);
+          seconds = mins * 60;
+          presets.forEach(x=> x.className = 'timer-preset font-mono text-[10px] font-bold px-2.5 py-1 rounded-full border-[1.5px] border-[#D7DBE1] dark:border-[#33363D] text-[#8A8F98] dark:text-[#9AA3AE]');
+          p.className = 'timer-preset font-mono text-[10px] font-bold px-2.5 py-1 rounded-full border-[1.5px] border-[#1E2126] dark:border-[#E7E9EC] bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B]';
+          draw();
+        });
+      });
+      toggleBtn.addEventListener('click', ()=>{
+        running = !running;
+        toggleBtn.textContent = running ? 'Pause' : 'Start purring';
+        if (running){
+          timerInterval = setInterval(()=>{
+            seconds = Math.max(0, seconds - 1);
+            draw();
+            if (seconds === 0){ clearTimerInterval(); running = false; toggleBtn.textContent = 'Start purring'; }
+          }, 1000);
+        } else { clearTimerInterval(); }
+      });
+      demoPanel.querySelector('#timerReset').addEventListener('click', ()=>{
+        clearTimerInterval(); running = false; seconds = mins * 60; toggleBtn.textContent = 'Start purring'; draw();
+      });
+      draw();
+    } else if (demo === 'zen'){
+      demoPanel.innerHTML = `
+        <div class="flex gap-3 items-stretch h-[150px] max-w-[380px] rounded-xl overflow-hidden border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D]">
+          <div id="zenSidebar" class="w-[90px] shrink-0 bg-[#F1F2F4] dark:bg-[#26282D] p-2.5 transition-all duration-300 overflow-hidden">
+            <div class="h-3 w-10 rounded-full bg-[#D7DBE1] dark:bg-[#33363D] mb-2.5"></div>
+            <div class="h-3 w-12 rounded-full bg-[#D7DBE1] dark:bg-[#33363D] mb-2.5"></div>
+            <div class="h-3 w-9 rounded-full bg-[#D7DBE1] dark:bg-[#33363D]"></div>
+          </div>
+          <div class="flex-1 flex items-center justify-center relative">
+            <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE]">Your task canvas</p>
+            <button id="zenToggle" class="demo-btn absolute bottom-2.5 right-2.5 w-9 h-9 rounded-full bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B] flex items-center justify-center">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>`;
+      const sidebar = demoPanel.querySelector('#zenSidebar');
+      demoPanel.querySelector('#zenToggle').addEventListener('click', ()=>{
+        const hidden = sidebar.style.width === '0px';
+        sidebar.style.width = hidden ? '90px' : '0px';
+        sidebar.style.padding = hidden ? '' : '0px';
+        sidebar.style.opacity = hidden ? '1' : '0';
+      });
+    } else if (demo === 'search'){
+      const items = [
+        { title: 'Draft the reports page', subject: 'Bantay', theme: '#DD5B44' },
+        { title: 'Sketch route icons', subject: 'Iskolar', theme: '#3A67D8' },
+        { title: 'Fingerprint scan test', subject: 'Bantay', theme: '#DD5B44' },
+        { title: 'Study for finals', subject: 'School', theme: '#479456' }
+      ];
+      demoPanel.innerHTML = `
+        <div class="relative max-w-[380px] mb-3.5">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#B7BBC2] dark:text-[#5B5F68] pointer-events-none"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="searchDemoInput" type="text" placeholder="Search tasks..." class="w-full border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-xl pl-9 pr-3 py-2.5 text-[13px] font-sans bg-[#FAFBFC] dark:bg-[#121417] outline-none focus:border-[#1E2126] dark:focus:border-[#E7E9EC]">
+        </div>
+        <div id="searchResults" class="flex flex-col gap-2 max-w-[380px]"></div>`;
+      const input = demoPanel.querySelector('#searchDemoInput');
+      const results = demoPanel.querySelector('#searchResults');
+      function draw(q){
+        const filtered = items.filter(it => (it.title + ' ' + it.subject).toLowerCase().includes(q.toLowerCase()));
+        results.innerHTML = filtered.length ? filtered.map(it=>`
+          <div class="flex items-center gap-2.5 rounded-xl px-3 py-2.5" style="background:${it.theme}17;">
+            <span class="font-mono text-[9px] font-bold uppercase tracking-[.06em] px-2 py-[3px] rounded-full" style="background:${it.theme}26;color:${it.theme}">${it.subject}</span>
+            <p class="font-bold text-[13px] truncate">${it.title}</p>
+          </div>`).join('') : `<p class="text-[12px] text-[#8A8F98] dark:text-[#9AA3AE] py-2">No tickets match "${q}".</p>`;
+      }
+      input.addEventListener('input', ()=> draw(input.value));
+      draw('');
+    } else if (demo === 'subtasks'){
+      demoPanel.innerHTML = `
+        <div class="max-w-[380px]">
+          <div class="flex items-center justify-between mb-3">
+            <p class="font-bold text-[15px]">Prep Bantay demo</p>
+            <span id="subProgress" class="font-mono text-[11.5px] font-bold px-[9px] py-1 rounded-full bg-[#3A67D8]/15 text-[#3A67D8]">0/4</span>
+          </div>
+          <div id="subList" class="flex flex-col gap-1.5"></div>
+        </div>`;
+      const steps = ['Seed demo students', 'Test fingerprint scan', 'Check guardian emails', 'Walk through dashboard'];
+      const done = [true, true, false, false];
+      const list = demoPanel.querySelector('#subList');
+      const progress = demoPanel.querySelector('#subProgress');
+      function draw(){
+        list.innerHTML = steps.map((s,i)=>`
+          <button data-i="${i}" class="sub-row flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left hover:bg-[#F5F6F8] dark:hover:bg-[#26282D]">
+            <span class="w-[16px] h-[16px] rounded-full border-2 flex items-center justify-center shrink-0 ${done[i] ? 'bg-[#479456] border-[#479456]' : 'border-[#1E2126]/25'}">
+              ${done[i] ? '<svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="white" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>' : ''}
+            </span>
+            <span class="text-[13px] font-medium ${done[i] ? 'line-through text-[#8A8F98] dark:text-[#9AA3AE]' : ''}">${s}</span>
+          </button>`).join('');
+        const n = done.filter(Boolean).length;
+        progress.textContent = `${n}/${steps.length}`;
+        list.querySelectorAll('.sub-row').forEach(btn=>{
+          btn.addEventListener('click', ()=>{ const i = Number(btn.dataset.i); done[i] = !done[i]; draw(); });
+        });
+      }
+      draw();
+    } else if (demo === 'recurring'){
+      demoPanel.innerHTML = `
+        <div class="max-w-[380px]">
+          <p class="bp-label mb-2.5">Recurring tasks</p>
+          <div id="recurList" class="flex flex-col gap-2 mb-3.5"></div>
+          <p class="bp-label mb-2.5">From class schedule</p>
+          <button id="genScheduleBtn" class="demo-btn w-full border-none rounded-xl px-3.5 py-2.5 font-bold text-[12.5px] cursor-pointer font-sans bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B]">Generate this week's tickets</button>
+          <p id="genNote" class="text-[11.5px] text-[#8A8F98] dark:text-[#9AA3AE] mt-2 text-center h-4"></p>
+        </div>`;
+      const rows = [
+        { label: 'Water the plants', freq: 'Daily', on: true },
+        { label: 'Sunday meal prep', freq: 'Weekly', on: true },
+        { label: 'Submit timesheet', freq: 'Monthly', on: false }
+      ];
+      const list = demoPanel.querySelector('#recurList');
+      function draw(){
+        list.innerHTML = rows.map((r,i)=>`
+          <div class="flex items-center gap-2.5 rounded-xl border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D] px-3 py-2.5">
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-[13px] ${r.on ? '' : 'opacity-50'}">${r.label}</p>
+              <p class="font-mono text-[9.5px] uppercase tracking-[.08em] text-[#8A8F98] dark:text-[#9AA3AE]">${r.freq}</p>
+            </div>
+            <button data-i="${i}" class="recur-toggle w-9 h-5 rounded-full relative shrink-0 transition-colors ${r.on ? 'bg-[#3A67D8]' : 'bg-[#D7DBE1] dark:bg-[#33363D]'}">
+              <span class="absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow transition-transform duration-150" style="transform:translateX(${r.on ? '16px' : '0px'})"></span>
+            </button>
+          </div>`).join('');
+        list.querySelectorAll('.recur-toggle').forEach(btn=>{
+          btn.addEventListener('click', ()=>{ const i = Number(btn.dataset.i); rows[i].on = !rows[i].on; draw(); });
+        });
+      }
+      draw();
+      demoPanel.querySelector('#genScheduleBtn').addEventListener('click', ()=>{
+        const note = demoPanel.querySelector('#genNote');
+        note.textContent = 'Generated 5 tickets from your schedule.';
+        setTimeout(()=>{ if (note) note.textContent = ''; }, 2200);
+      });
+    } else if (demo === 'sharecard'){
+      demoPanel.innerHTML = `
+        <div class="flex gap-5 items-start flex-wrap">
+          <div class="w-[150px] aspect-[4/5] rounded-[18px] bg-gradient-to-br from-[#3A67D8] via-[#C13575] to-[#F7A6A6] p-4 flex flex-col justify-between text-white shrink-0 shadow-[0_20px_40px_-16px_rgba(193,53,117,.45)]">
+            <div>
+              <p class="font-mono text-[8px] font-bold uppercase tracking-[.14em] opacity-80">PurrfectPlanner</p>
+              <p class="font-extrabold text-[13px] mt-1">fuujin's streak</p>
+            </div>
+            <div>
+              <p class="font-mono text-[30px] font-extrabold leading-none" id="shareStreakNum">12</p>
+              <p class="font-mono text-[9px] uppercase tracking-[.1em] opacity-80">day streak</p>
+            </div>
+          </div>
+          <div class="flex-1 min-w-[160px]">
+            <p class="text-[12.5px] text-[#8A8F98] dark:text-[#9AA3AE] leading-relaxed mb-3">Share your streak and open tasks with a friend — no account needed.</p>
+            <div class="flex gap-2">
+              <button id="shareDownloadBtn" class="demo-btn font-mono text-[10.5px] font-bold uppercase tracking-[.08em] px-3.5 py-2 rounded-full border-2 border-dashed border-[#D7DBE1] dark:border-[#33363D]">Download</button>
+              <button id="shareShareBtn" class="demo-btn font-mono text-[10.5px] font-bold uppercase tracking-[.08em] px-3.5 py-2 rounded-full bg-[#1E2126] dark:bg-[#E7E9EC] text-white dark:text-[#15171B]">Share</button>
+            </div>
+            <p id="shareNote" class="text-[11px] text-[#8A8F98] dark:text-[#9AA3AE] mt-2 h-4"></p>
+          </div>
+        </div>`;
+      const note = demoPanel.querySelector('#shareNote');
+      demoPanel.querySelector('#shareDownloadBtn').addEventListener('click', ()=>{
+        note.textContent = 'Card image saved.';
+        setTimeout(()=>{ if (note) note.textContent = ''; }, 2000);
+      });
+      demoPanel.querySelector('#shareShareBtn').addEventListener('click', ()=>{
+        note.textContent = 'Share sheet opened.';
+        setTimeout(()=>{ if (note) note.textContent = ''; }, 2000);
+      });
+    }
+  }
+
+  setActive('tasks');
+</script>
+
+</body>
+</html>
