@@ -1,14 +1,11 @@
-// Ticket To-Do — minimal service worker
-// Just enough for the browser to consider this app "installable",
-// plus basic offline caching so it still opens without a connection.
 
-const CACHE_NAME = 'ticket-todo-v1';
+const CACHE_NAME = 'purrfectplanner-v1';
 const APP_SHELL = [
   './',
   './index.html',
+  './main.html',
   './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+  './assets/icon2.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -32,9 +29,9 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network-first for the Gemini API calls (never cache those), cache-first for everything else.
+
   if (event.request.url.includes('generativelanguage.googleapis.com')) {
-    return; // let it go straight to network
+    return; 
   }
 
   event.respondWith(
@@ -42,7 +39,7 @@ self.addEventListener('fetch', (event) => {
       if (cached) return cached;
       return fetch(event.request)
         .then((response) => {
-          // Only cache same-origin, successful GET responses
+      
           if (
             event.request.method === 'GET' &&
             response.ok &&
@@ -53,7 +50,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => cached); // offline fallback (no-op if nothing cached)
+        .catch(() => cached);
     })
   );
 });
