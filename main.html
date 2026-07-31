@@ -62,6 +62,15 @@
   }
   .idle-active { animation: idlePulse 1.8s ease-in-out infinite; }
   .idle-active .idle-icon { animation: idleBounce 1.8s ease-in-out infinite; }
+
+  /* Mobile board expand toggle: widens the board on small screens */
+  @media (max-width: 900px){
+    body.board-expanded { padding-left: 8px; padding-right: 8px; }
+    body.board-expanded .app { max-width: 100%; }
+    body.board-expanded #stackWrapper { max-width: 100%; }
+  }
+  #qaExpandBoardBtn.qa-active svg { transform: scale(0.88) rotate(180deg); }
+  #qaExpandBoardBtn svg { transition: transform .18s ease; }
   .dark .idle-active { border-color: #33363D; }
 
   /* Quick action bar (buttons visible outside the profile dropdown) */
@@ -502,7 +511,8 @@
           <p id="sidebarDate" class="font-mono text-[10.5px] font-bold uppercase tracking-[.14em] text-[#3A67D8]">MON · JUL 06 · 12:00 AM</p>
         </div>
         <h1 id="greetingH1" contenteditable="true" spellcheck="false" title="Click to edit" class="text-[24px] font-extrabold tracking-[-0.02em] leading-[1.08] m-0 max-[900px]:text-[19px] outline-none rounded-md focus:bg-[#F1F2F4] dark:focus:bg-[#26282D] focus:px-1 focus:-mx-1 transition-colors cursor-text">Your day,<br class="max-[900px]:hidden"> <span class="max-[900px]:inline">ticketed.</span></h1>
-        <p id="streakLabel" class="hidden mt-1.5 font-mono text-[10.5px] font-bold uppercase tracking-[.08em] text-[#D9932A] items-center gap-1"><span id="streakFlame" class="inline-flex"></span><span id="streakCount">0</span> day streak
+        <p id="streakLabel" class="hidden mt-1.5 font-mono text-[10.5px] font-bold uppercase tracking-[.08em] text-[#D9932A] items-center gap-1">
+          <span id="streakFlame" class="hidden"></span><span id="streakCount" class="hidden">0</span>
           <span class="progress-ring-wrap ml-1" id="progressRingWrap" data-tooltip="Today's progress" title="Today's progress">
             <svg width="26" height="26" viewBox="0 0 26 26">
               <circle class="progress-ring-bg" cx="13" cy="13" r="10.5" fill="none" stroke-width="2.5"/>
@@ -529,6 +539,9 @@
         <button id="qaZenBtn" aria-label="Zen mode" data-tooltip="Zen mode" class="qa-btn">
           <svg id="qaZenIconOn" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
           <svg id="qaZenIconOff" class="hidden" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>
+        </button>
+        <button id="qaExpandBoardBtn" aria-label="Expand board" data-tooltip="Expand board" class="qa-btn hidden max-[900px]:flex">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
         </button>
         <button id="quickExpandBtn" aria-label="More" data-tooltip="More" class="qa-btn">
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
@@ -616,6 +629,17 @@
               <span class="flex-1 text-left">Dark mode</span>
               <span id="menuDarkPill" class="w-9 h-5 rounded-full bg-[#D7DBE1] relative transition-colors shrink-0">
                 <span id="menuDarkKnob" class="absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow transition-transform duration-150"></span>
+              </span>
+            </button>
+
+            <button id="menuSoundFxToggle" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg id="menuSoundOnIcon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18 6a9 9 0 0 1 0 12"/></svg>
+                <svg id="menuSoundOffIcon" class="hidden" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M23 9l-6 6M17 9l6 6"/></svg>
+              </span>
+              <span class="flex-1 text-left">Sound effects</span>
+              <span id="menuSoundFxPill" class="w-9 h-5 rounded-full bg-[#D7DBE1] relative transition-colors shrink-0">
+                <span id="menuSoundFxKnob" class="absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow transition-transform duration-150"></span>
               </span>
             </button>
 
@@ -722,6 +746,15 @@
           </div>
 
           <div class="border-t border-[#EEEFF1] dark:border-[#2A2D33] py-1.5">
+            <button id="menuDragToggle" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors">
+              <span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center text-[#1E2126] dark:text-[#E7E9EC] shrink-0">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+              </span>
+              <span class="flex-1 text-left">Drag cards</span>
+              <span id="menuDragPill" class="w-9 h-5 rounded-full bg-[#D7DBE1] relative transition-colors shrink-0">
+                <span id="menuDragKnob" class="absolute top-[2px] left-[2px] w-4 h-4 rounded-full bg-white shadow transition-transform duration-150"></span>
+              </span>
+            </button>
             <button id="menuResetLayoutBtn" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold hover:bg-[#F5F6F8] dark:hover:bg-[#26282D] transition-colors"><span class="w-7 h-7 rounded-full bg-[#F1F2F4] dark:bg-[#26282D] flex items-center justify-center shrink-0">↺</span><span class="flex-1 text-left">Reset Layout</span></button><button id="menuClearDataBtn" class="menu-row w-full flex items-center gap-3 px-4 py-2.5 text-[13.5px] font-semibold text-[#C13535] hover:bg-[#FCEAE7] dark:hover:bg-[#2A1E1E] transition-colors">
               <span class="w-7 h-7 rounded-full bg-[#FCEAE7] dark:bg-[#2A1E1E] flex items-center justify-center text-[#C13535] shrink-0">
                 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
@@ -2123,17 +2156,10 @@
   function updateStreakUI(){
     const streak = computeStreak();
     const label = document.getElementById('streakLabel');
-    const countEl = document.getElementById('streakCount');
-    const flameEl = document.getElementById('streakFlame');
-    if(flameEl && !flameEl.innerHTML) flameEl.innerHTML = FLAME_SVG;
-    if(streak > 0){
-      countEl.textContent = streak;
-      label.classList.remove('hidden');
-      label.classList.add('flex');
-    } else {
-      label.classList.add('hidden');
-      label.classList.remove('flex');
-    }
+    // Streak text was moved to the departure board only; main card now just
+    // keeps the "today's progress" ring visible.
+    label.classList.remove('hidden');
+    label.classList.add('flex');
 
     const dLabel = document.getElementById('dboardStreakLabel');
     const dCountEl = document.getElementById('dboardStreakCount');
@@ -2547,17 +2573,33 @@
     const label = dt.toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
     daySchedulePopupTitle.textContent = label;
 
-    const items = getScheduleForDate(iso);
+    const classItems = getScheduleForDate(iso).map(c => ({
+      type: 'class',
+      subject: c.subject,
+      start: c.start,
+      end: c.end
+    }));
+    const dayTaskItems = tasksByDate(iso).map(t => ({
+      type: 'task',
+      subject: t.title,
+      start: t.start,
+      end: t.end,
+      done: t.done,
+      color: t.subject ? subjectAccentColor(t.subject) : null
+    }));
+    const items = [...dayTaskItems, ...classItems].sort((a,b) => (a.start || '').localeCompare(b.start || ''));
+
     if(items.length === 0){
       daySchedulePopupList.innerHTML = `<p class="text-[12.5px] text-[#B7BBC2] dark:text-[#5B5F68] text-center py-4">Nothing on the schedule.</p>`;
     } else {
       daySchedulePopupList.innerHTML = items.map(c => {
-        const dotColor = subjectAccentColor(c.subject);
-        const timeStr = (c.start && c.end) ? `${fmtTime(c.start)} – ${fmtTime(c.end)}` : '';
+        const dotColor = c.type === 'task' ? (c.color || '#3A67D8') : subjectAccentColor(c.subject);
+        const timeStr = (c.start && c.end) ? `${fmtTime(c.start)} – ${fmtTime(c.end)}` : (c.start ? fmtTime(c.start) : '');
+        const doneClass = (c.type === 'task' && c.done) ? 'opacity-50 line-through' : '';
         return `
           <div class="flex items-center gap-2.5 border-[1.5px] border-[#E4E6EA] dark:border-[#33363D] rounded-2xl px-3 py-2.5">
             <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${dotColor}"></span>
-            <span class="flex-1 min-w-0 truncate text-[13.5px] font-bold text-[#1E2126] dark:text-[#E7E9EC]">${escapeHtml(c.subject)}</span>
+            <span class="flex-1 min-w-0 truncate text-[13.5px] font-bold text-[#1E2126] dark:text-[#E7E9EC] ${doneClass}">${escapeHtml(c.subject)}</span>
             ${timeStr ? `<span class="shrink-0 font-mono text-[11px] font-bold text-[#8A8F98] dark:text-[#9AA3AE]">${timeStr}</span>` : ''}
           </div>`;
       }).join('');
@@ -3173,6 +3215,7 @@
     subtaskInput.value = '';
     renderSubtaskEditor();
     subtaskInput.focus();
+    playAddSound();
   }
   subtaskAddBtn.addEventListener('click', addSubtaskFromInput);
   subtaskInput.addEventListener('keydown', (e)=>{
@@ -3279,6 +3322,7 @@
       if(idx > -1) tasks[idx] = {...tasks[idx], ...data};
     } else {
       tasks.push({ id: uid(), done: false, ...data });
+      playAddSound();
     }
     saveTasks();
     render();
@@ -3330,6 +3374,7 @@
     if(idx === -1) return;
     const [removed] = tasks.splice(idx, 1);
     saveTasks();
+    playDeleteSound();
     render();
     if(calendarOverlay && !calendarOverlay.classList.contains('hidden')) renderCalendarDay(calSelectedDate);
     showUndoToast(`"${removed.title}" deleted.`, ()=>{
@@ -3431,10 +3476,81 @@
     const timer = setTimeout(finish, 5000);
   }
 
-  function playPing(){
+  // ---- Sound effects on/off ----
+  const SOUND_FX_KEY = 'ticket_todo_sound_fx_v1';
+  let soundFxEnabled = localStorage.getItem(SOUND_FX_KEY) !== '0';
+  window.isSoundFxEnabled = function(){ return soundFxEnabled; };
+  window.setSoundFxEnabled = function(enabled){
+    soundFxEnabled = enabled;
+    safeSetItem(SOUND_FX_KEY, enabled ? '1' : '0');
+  };
+
+  (function setupSoundFxToggle(){
+    const btn = document.getElementById('menuSoundFxToggle');
+    const pill = document.getElementById('menuSoundFxPill');
+    const knob = document.getElementById('menuSoundFxKnob');
+    const iconOn = document.getElementById('menuSoundOnIcon');
+    const iconOff = document.getElementById('menuSoundOffIcon');
+    if(!btn || !pill || !knob) return;
+    function render(){
+      pill.classList.toggle('bg-[#3A67D8]', soundFxEnabled);
+      pill.classList.toggle('bg-[#D7DBE1]', !soundFxEnabled);
+      knob.style.transform = soundFxEnabled ? 'translateX(16px)' : 'translateX(0)';
+      if(iconOn) iconOn.classList.toggle('hidden', !soundFxEnabled);
+      if(iconOff) iconOff.classList.toggle('hidden', soundFxEnabled);
+    }
+    render();
+    btn.addEventListener('click', ()=>{
+      const wasEnabled = soundFxEnabled;
+      window.setSoundFxEnabled(!wasEnabled);
+      render();
+      if(!wasEnabled) playClickSound();
+      showToast(soundFxEnabled ? 'Sound effects on.' : 'Sound effects off.');
+    });
+  })();
+
+  // Paper-rustle "swoosh" for picking up a draggable side card (menu, calendar, departure board)
+  function playDragSwoosh(){
+    if(!soundFxEnabled) return;
     try{
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      [880, 1320].forEach((freq, i)=>{
+      const now = ctx.currentTime;
+      const duration = 0.28;
+      const bufferSize = Math.floor(ctx.sampleRate * duration);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for(let i = 0; i < bufferSize; i++){
+        data[i] = (Math.random() * 2 - 1);
+      }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const bandpass = ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.setValueAtTime(2200, now);
+      bandpass.frequency.linearRampToValueAtTime(1200, now + duration);
+      bandpass.Q.value = 0.6;
+
+      const highpass = ctx.createBiquadFilter();
+      highpass.type = 'highpass';
+      highpass.frequency.value = 700;
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.22, now + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+      noise.connect(bandpass).connect(highpass).connect(gain).connect(ctx.destination);
+      noise.start(now);
+      noise.stop(now + duration);
+    }catch(e){ /* ignore */ }
+  }
+
+  function playPing(){
+    if(!soundFxEnabled) return;
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [440, 660].forEach((freq, i)=>{
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
@@ -3449,8 +3565,74 @@
     }catch(e){ /* audio not available, ignore */ }
   }
 
+  // Soft ascending "pop" sound for adding a new task or note
+  function playAddSound(){
+    if(!soundFxEnabled) return;
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(260, now);
+      osc.frequency.exponentialRampToValueAtTime(370, now + 0.1);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.16, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    }catch(e){ /* ignore */ }
+  }
+
+  // Soft descending "swoosh" sound for deleting a task or note
+  function playDeleteSound(){
+    if(!soundFxEnabled) return;
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filt = ctx.createBiquadFilter();
+      filt.type = 'lowpass';
+      filt.frequency.value = 800;
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(260, now);
+      osc.frequency.exponentialRampToValueAtTime(90, now + 0.16);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.12, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+      osc.connect(filt).connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.22);
+    }catch(e){ /* ignore */ }
+  }
+
+  // Tiny neutral "tick" for toggles, reordering, and opening the command bar
+  function playClickSound(){
+    if(!soundFxEnabled) return;
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(320, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.07, now + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.07);
+    }catch(e){ /* ignore */ }
+  }
+
   // Tiny "paw-print" sound + haptic when a ticket is stamped done: two soft muted taps (like little paw pats)
   function playStampSound(){
+    if(!soundFxEnabled){
+      if('vibrate' in navigator){ try{ navigator.vibrate([12, 40, 12]); }catch(e){ /* ignore */ } }
+      return;
+    }
     try{
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const now = ctx.currentTime;
@@ -3459,10 +3641,10 @@
         const gain = ctx.createGain();
         const filt = ctx.createBiquadFilter();
         filt.type = 'lowpass';
-        filt.frequency.value = 900;
+        filt.frequency.value = 700;
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(220 - i*30, now + delay);
-        osc.frequency.exponentialRampToValueAtTime(120 - i*20, now + delay + 0.08);
+        osc.frequency.setValueAtTime(150 - i*20, now + delay);
+        osc.frequency.exponentialRampToValueAtTime(90 - i*15, now + delay + 0.08);
         gain.gain.setValueAtTime(0.0001, now + delay);
         gain.gain.exponentialRampToValueAtTime(0.16, now + delay + 0.015);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + 0.14);
@@ -3597,6 +3779,7 @@
         e.stopPropagation();
         notes = notes.filter(n=>n.id !== note.id);
         saveNotes();
+        playDeleteSound();
         renderNotes();
       });
 
@@ -3692,6 +3875,7 @@
     };
     notes.push(note);
     saveNotes();
+    playAddSound();
     renderNotes();
   });
 
@@ -3977,6 +4161,7 @@
     classSchedule.push({ id: classUid(), subject: '', mode: 'weekly', days: [], dates: [], start: '08:00', end: '09:30' });
     saveClassSchedule();
     renderScheduleList();
+    playAddSound();
   });
 
   function isoDateFromCursor(cursor){
@@ -4149,6 +4334,7 @@
     recurringTasks.push({ id: recurringUid(), title: '', days: [], start: '', end: '' });
     saveRecurring();
     renderRecurringList();
+    playAddSound();
   });
 
   recurringGenerateBtn.addEventListener('click', ()=>{
@@ -5705,6 +5891,30 @@ function closeQuickActionsPopover(){
   document.getElementById('qaFocusBtn').addEventListener('click', openFocusModal);
   document.getElementById('qaScheduleBtn').addEventListener('click', openScheduleModal);
 
+  // ================= Mobile board expand toggle =================
+  (function setupBoardExpand(){
+    const BOARD_EXPANDED_KEY = 'ticket_todo_board_expanded_v1';
+    const qaExpandBoardBtn = document.getElementById('qaExpandBoardBtn');
+    if(!qaExpandBoardBtn) return;
+    let boardExpanded = localStorage.getItem(BOARD_EXPANDED_KEY) === '1';
+
+    function applyBoardExpanded(){
+      document.body.classList.toggle('board-expanded', boardExpanded);
+      qaExpandBoardBtn.classList.toggle('qa-active', boardExpanded);
+      qaExpandBoardBtn.setAttribute('data-tooltip', boardExpanded ? 'Collapse board' : 'Expand board');
+      qaExpandBoardBtn.setAttribute('aria-label', boardExpanded ? 'Collapse board' : 'Expand board');
+    }
+    applyBoardExpanded();
+
+    qaExpandBoardBtn.addEventListener('click', ()=>{
+      boardExpanded = !boardExpanded;
+      safeSetItem(BOARD_EXPANDED_KEY, boardExpanded ? '1' : '0');
+      applyBoardExpanded();
+      playClickSound();
+      showToast(boardExpanded ? 'Board expanded.' : 'Board back to normal size.');
+    });
+  })();
+
   // ================= Zen mode + hide side cards =================
   (function setupZenAndHideCards(){
     const ZEN_MODE_KEY = 'ticket_todo_zen_mode_v1';
@@ -6160,6 +6370,7 @@ function closeQuickActionsPopover(){
     tasks.splice(insertAt, 0, dragged);
     saveTasks();
     render();
+    playClickSound();
     requestAnimationFrame(()=>{
       const el = document.querySelector(`.ticket-wrap[data-id="${draggedId}"]`);
       if(el){
@@ -6229,6 +6440,7 @@ function closeQuickActionsPopover(){
     cmdkOverlay.classList.remove('hidden');
     cmdkOverlay.classList.add('flex');
     cmdkInput.value = '';
+    playClickSound();
     renderCmdk('');
     setTimeout(()=> cmdkInput.focus(), 10);
   }
@@ -6371,6 +6583,16 @@ function closeQuickActionsPopover(){
 
 <script>
 (function(){
+const DRAG_ENABLED_KEY = 'ticket_todo_drag_enabled_v1';
+// Default on, unless the user has explicitly turned it off before.
+window.cardDragEnabled = localStorage.getItem(DRAG_ENABLED_KEY) !== '0';
+const dragToggleListeners = [];
+window.setCardDragEnabled = function(enabled){
+  window.cardDragEnabled = enabled;
+  safeSetItem(DRAG_ENABLED_KEY, enabled ? '1' : '0');
+  dragToggleListeners.forEach(fn=> fn(enabled));
+};
+
 function makeDraggable(id,key){
  const el=document.getElementById(id);
  if(!el) return;
@@ -6381,14 +6603,21 @@ function makeDraggable(id,key){
  function apply(){
    el.style.transform=`translate(${pos.x}px,${pos.y}px) scale(${scale})`;
  }
+ function updateCursor(enabled){
+   el.style.cursor = enabled ? '' : 'default';
+ }
+ updateCursor(window.cardDragEnabled);
+ dragToggleListeners.push(updateCursor);
  let startX,startY,origX,origY,drag=false;
  const down=(e)=>{
+   if(!window.cardDragEnabled) return;
    if(e.target.closest('button,input,textarea,select')) return;
    e.stopPropagation();
    drag=true;
    el.classList.add('dragging','drag-snap');
    scale=1.025;
    apply();
+   if(typeof playDragSwoosh === 'function') playDragSwoosh();
    const p=e.touches?e.touches[0]:e;
    startX=p.clientX; startY=p.clientY;
    origX=pos.x; origY=pos.y;
@@ -6433,6 +6662,28 @@ document.addEventListener('DOMContentLoaded',()=>{
    document.getElementById('miniCalCard')?.resetPosition();
    document.getElementById('departureBoardCard')?.resetPosition();
  };
+
+ // ---- Drag cards toggle (menu, mini calendar, departure board) ----
+ const menuDragToggle = document.getElementById('menuDragToggle');
+ const menuDragPill = document.getElementById('menuDragPill');
+ const menuDragKnob = document.getElementById('menuDragKnob');
+ if(menuDragToggle && menuDragPill && menuDragKnob){
+   function renderDragToggle(enabled){
+     menuDragPill.classList.toggle('bg-[#3A67D8]', enabled);
+     menuDragPill.classList.toggle('bg-[#D7DBE1]', !enabled);
+     menuDragKnob.style.transform = enabled ? 'translateX(16px)' : 'translateX(0)';
+   }
+   renderDragToggle(window.cardDragEnabled);
+   menuDragToggle.addEventListener('click', ()=>{
+     const next = !window.cardDragEnabled;
+     window.setCardDragEnabled(next);
+     renderDragToggle(next);
+     if(typeof playClickSound === 'function') playClickSound();
+     if(typeof showToast === 'function'){
+       showToast(next ? 'Card dragging enabled.' : 'Card dragging disabled.');
+     }
+   });
+ }
 });
 })();
 </script>
