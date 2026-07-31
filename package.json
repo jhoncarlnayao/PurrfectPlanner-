@@ -1,0 +1,19 @@
+{
+  "name": "purrfect-planner",
+  "version": "1.0.0",
+  "description": "Your to-do list, reimagined as a little travel gate",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"No tests configured\" && exit 0"
+  },
+  "keywords": [
+    "planner",
+    "todo",
+    "pwa"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
